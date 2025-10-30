@@ -1,0 +1,118 @@
+---
+title: "Onboarding Cluster Instruction"
+description: "Step-by-step instructions for onboarding your Kubernetes cluster to Kubetrace."
+---
+
+## Onboard Your Cluster
+
+Once you have selected your Cloud provider and Cluster, follow these steps to onboard your cluster:
+
+### Prepare to Execute the Script
+
+In Step 3 of the platform, copy the script for creating a Readonly Service Account and execute it. **Ensure all prerequisites are satisfied before running the script.**
+
+#### Example: Execute Script in Azure
+
+```sh
+./kubetrace-azure.sh <cluster-name> <kubeconfig-output-path>
+```
+
+If you encounter errors such as:
+
+```
+(AuthorizationFailed) The client '57eada60-3d78-4de3-a599-93e8d7e4f' with object id '57eada60-3d78-4de3-a599-9db2a7e4f' does not have authorization to perform action
+```
+
+Follow the prerequisite instruction for admin access or least privilege setup.
+
+### Instructions for Admin to Set Up Non-Admin Access
+
+#### 1️⃣ Create a Service Principal
+```sh
+az ad sp create-for-rbac --skip-assignment --name aks-test-nonadmin -o json > nonadmin-sp.json
+```
+This will output: `{ "appId": "xxx", "password": "yyy", "tenant": "zzz" }`
+
+#### 2️⃣ Assign AKS Cluster User Role
+```sh
+az role assignment create \
+  --assignee <appId-from-json> \
+  --role "Azure Kubernetes Service Cluster User Role" \
+  --scope $(az aks show -n <cluster-name> -g <resource-group> --query id -o tsv)
+```
+
+#### 3️⃣ Save and Apply RBAC YAML
+Save the following as `kubetrace-rbac.yaml` and apply it:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubetrace-nonadmin
+rules:
+- apiGroups: [""]
+  resources: ["namespaces", "serviceaccounts", "serviceaccounts/token", "secrets", "pods", "events"]
+  verbs: ["get", "list", "create", "update"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list", "create"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubetrace-nonadmin-binding
+subjects:
+- kind: User
+  name: "<appId-from-json>"
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: kubetrace-nonadmin
+  apiGroup: rbac.authorization.k8s.io
+```
+Apply with:
+```sh
+kubectl apply -f kubetrace-rbac.yaml
+```
+
+#### 4️⃣ Share Credentials
+Send the appId, password, and tenant from step 1 to the non-admin user.
+
+### Instructions for Non-Admin User
+
+#### 5️⃣ Login with Service Principal
+```sh
+az login --service-principal -u <appId> -p <password> --tenant <tenant>
+```
+
+#### 6️⃣ Get Cluster Credentials
+```sh
+az aks get-credentials -n <cluster-name> -g <resource-group> --overwrite-existing
+```
+
+#### 7️⃣ Apply Operator YAML
+```sh
+kubectl apply -f operator.yaml
+```
+
+#### 8️⃣ run the Script
+```sh
+./kubetrace.sh <cluster-name> ./readonly-kubeconfig.yaml
+```
+
+### Final Steps in Kubetrace Platform
+
+1. After executing the scripts, copy the `kubeconfig.yaml` and paste it into Step 4 of the Kubetrace platform.
+2. In Step 5, select the discovered cluster, click **Add Cluster**, and generate the Kubetrace operator.
+3. In Step 6, copy the generated Kubetrace operator `config.yaml` and execute:
+   ```sh
+   kubectl apply -f kubetrace-operator.yaml
+   ```
+4. Make sure the operator is running properly:
+   ```sh
+   kubectl get pods -n kubetrace-readonly
+   ```
+
+---
