@@ -16,9 +16,10 @@
           {
             "group": "Getting started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+            "index",
+            "quickstart",
+            "onboarding-cluster-instruction",
+            "development"
             ]
           },
           {
