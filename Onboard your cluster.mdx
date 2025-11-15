@@ -1,9 +1,12 @@
 ---
-title: "Onboarding Cluster Instruction"
+title: "Onboarding Cluster"
 description: "Step-by-step instructions for onboarding your Kubernetes cluster to Kubetrace."
 ---
 
+Steps
+
 ## Onboard Your Cluster
+Description: Set up the required namespace and permissions for Kubetrace.
 
 Once you have selected your Cloud provider and Cluster, follow these steps to onboard your cluster:
 
@@ -11,39 +14,67 @@ Once you have selected your Cloud provider and Cluster, follow these steps to on
 
 In Step 3 of the platform, copy the script for creating a Readonly Service Account and execute it. **Ensure all prerequisites are satisfied before running the script.**
 
-#### Example: Execute Script in Azure
-
 ```sh
-./kubetrace-azure.sh <cluster-name> <kubeconfig-output-path>
-```
+#!/bin/bash
+set -euo pipefail
 
-If you encounter errors such as:
+cat <<'EOF'
 
-```
-(AuthorizationFailed) The client '57eada60-3d78-4de3-a599-93e8d7e4f' with object id '57eada60-3d78-4de3-a599-9db2a7e4f' does not have authorization to perform action
-```
+                                                                      
+██   ██ ██    ██ ██████  ███████ ████████ ██████   █████   ██████ ███████
+██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██      ██
+█████   ██    ██ ██████  █████      ██    ██████  ███████ ██      █████
+██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██      ██
+██   ██  ██████  ██████  ███████    ██    ██   ██ ██   ██  ██████ ███████
 
-Follow the prerequisite instruction for admin access or least privilege setup.
+                                                                      
+                                                                       
+EOF
 
-### Instructions for Admin to Set Up Non-Admin Access
+# ======== Input Arguments ========
+if [ "$#" -ne 2 ]; then
+  echo "Usage: $0 <cluster-name> <kubeconfig-output-path>"
+  exit 1
+fi
 
-#### 1️⃣ Create a Service Principal
-```sh
-az ad sp create-for-rbac --skip-assignment --name aks-test-nonadmin -o json > nonadmin-sp.json
-```
-This will output: `{ "appId": "xxx", "password": "yyy", "tenant": "zzz" }`
+CLUSTER_CONTEXT="$1"
+KUBECONFIG_OUTPUT="$2"
+ADMIN_CONTEXT="${CLUSTER_CONTEXT}-admin"
 
-#### 2️⃣ Assign AKS Cluster User Role
-```sh
-az role assignment create \
-  --assignee <appId-from-json> \
-  --role "Azure Kubernetes Service Cluster User Role" \
-  --scope $(az aks show -n <cluster-name> -g <resource-group> --query id -o tsv)
-```
+# Try to get cluster info for resource group detection
+CLUSTER_NAME="$CLUSTER_CONTEXT"
+RESOURCE_GROUP=""
 
-#### 3️⃣ Save and Apply RBAC YAML
-Save the following as `kubetrace-rbac.yaml` and apply it:
-```yaml
+# Attempt to get resource group from current context
+if kubectl config get-contexts -o name | grep -qx "$CLUSTER_CONTEXT"; then
+  RESOURCE_GROUP=$(kubectl config view -o jsonpath="{.contexts[?(@.name=='${CLUSTER_CONTEXT}')].context.cluster}" 2>/dev/null | sed 's/.*-\([^-]*\)$/\1/' 2>/dev/null || echo "")
+fi
+
+# ======== NON-ADMIN INSTRUCTIONS FUNCTION ========
+show_nonadmin_instructions() {
+  echo "❌ You do NOT have AKS admin access for $CLUSTER_NAME."
+  echo
+  echo "📋 INSTRUCTIONS FOR ADMIN TO SET UP NON-ADMIN ACCESS:"
+  echo "════════════════════════════════════════════════════════"
+  echo
+  echo "1️⃣ Create a Service Principal:"
+  echo "   az ad sp create-for-rbac --skip-assignment --name aks-test-nonadmin -o json > nonadmin-sp.json"
+  echo
+  echo "   📝 This will output: { "appId": "xxx", "password": "yyy", "tenant": "zzz" }"
+  echo
+  echo "2️⃣ Assign AKS Cluster User Role:"
+  echo "   az role assignment create \"
+  echo "     --assignee <appId-from-json> \"
+  echo "     --role "Azure Kubernetes Service Cluster User Role" \"
+  if [ -n "$RESOURCE_GROUP" ]; then
+    echo "     --scope \$(az aks show -n $CLUSTER_NAME -g $RESOURCE_GROUP --query id -o tsv)"
+  else
+    echo "     --scope \$(az aks show -n $CLUSTER_NAME -g <your-resource-group> --query id -o tsv)"
+  fi
+  echo
+  echo "3️⃣ Save this YAML as 'kubetrace-rbac.yaml' and apply it:"
+  echo "   ────────────────────────────────────────────────────"
+  cat <<'YAML'
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -71,36 +102,230 @@ roleRef:
   kind: ClusterRole
   name: kubetrace-nonadmin
   apiGroup: rbac.authorization.k8s.io
+YAML
+  echo "   ────────────────────────────────────────────────────"
+  echo "   kubectl apply -f kubetrace-rbac.yaml"
+  echo
+  echo "4️⃣ Share credentials with non-admin user:"
+  echo "   📤 Send them: appId, password, tenant from step 1"
+  echo
+  echo "📋 INSTRUCTIONS FOR NON-ADMIN USER:"
+  echo "══════════════════════════════════════"
+  echo
+  echo "5️⃣ Login with service principal:"
+  echo "   az login --service-principal -u <appId> -p <password> --tenant <tenant>"
+  echo
+  echo "6️⃣ Get cluster credentials:"
+  if [ -n "$RESOURCE_GROUP" ]; then
+    echo "   az aks get-credentials -n $CLUSTER_NAME -g $RESOURCE_GROUP --overwrite-existing"
+  else
+    echo "   az aks get-credentials -n $CLUSTER_NAME -g <your-resource-group> --overwrite-existing"
+  fi
+  echo
+  echo "7️⃣ Apply your operator.yaml file:"
+  echo "   kubectl apply -f operator.yaml"
+  echo
+  echo "8️⃣ Then run this script again:"
+  echo "   ./kubetrace.sh $CLUSTER_NAME readonly-kubeconfig.yaml"
+  echo
+  echo "════════════════════════════════════════════════════════"
+}
+
+# Check if admin context exists
+if kubectl config get-contexts -o name | grep -qx "$ADMIN_CONTEXT"; then
+  echo "✅ Admin context found: $ADMIN_CONTEXT"
+  echo "🔄 Switching to admin context..."
+  
+  # Test if we can actually use the admin context
+  if ! kubectl --context="$ADMIN_CONTEXT" auth can-i create clusterroles >/dev/null 2>&1; then
+    echo "❌ ERROR: Admin context '$ADMIN_CONTEXT' exists but lacks sufficient privileges."
+    echo "Unable to create cluster roles with admin context."
+    echo
+    if [ -n "$RESOURCE_GROUP" ]; then
+      echo "Please ensure you have admin credentials by running:"
+      echo "  az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_CONTEXT --admin"
+    else
+      echo "Please ensure you have admin credentials by running:"
+      echo "  az aks get-credentials --resource-group <your-resource-group> --name $CLUSTER_CONTEXT --admin"
+    fi
+    echo "Then rerun this script."
+    exit 1
+  fi
+else
+  echo "⚠️  Admin context '$ADMIN_CONTEXT' not found."
+  
+  # Check if user has basic cluster access and can create resources
+  if kubectl config get-contexts -o name | grep -qx "$CLUSTER_CONTEXT"; then
+    if kubectl --context="$CLUSTER_CONTEXT" auth can-i create clusterroles >/dev/null 2>&1; then
+      echo "✅ You have cluster admin privileges via regular context."
+      ADMIN_CONTEXT="$CLUSTER_CONTEXT"
+    else
+      echo "❌ No admin privileges detected."
+      show_nonadmin_instructions
+      exit 1
+    fi
+  else
+    echo "❌ ERROR: Cluster context '$CLUSTER_CONTEXT' not found."
+    show_nonadmin_instructions
+    exit 1
+  fi
+fi
+
+# Alias kubectl with admin context for easier use
+KUBECTL_ADMIN="kubectl --context=$ADMIN_CONTEXT"
+
+# ======== Configurable Constants ========
+NAMESPACE="kubetrace-readonly"
+SA_NAME="kubetrace-readonly-user"
+CLUSTER_ROLE="kubetrace-readonly-clusterrole"
+CLUSTER_BINDING="kubetrace-readonly-binding"
+
+# ======== Check Cluster Context Exists ========
+if ! kubectl config get-contexts -o name | grep -q "^${CLUSTER_CONTEXT}$"; then
+  echo "❌ Context '$CLUSTER_CONTEXT' not found in kubeconfig"
+  exit 1
+fi
+
+# ======== Create Namespace ========
+echo "🔧 Creating namespace: $NAMESPACE"
+if ! $KUBECTL_ADMIN get ns "$NAMESPACE" >/dev/null 2>&1; then
+  $KUBECTL_ADMIN create namespace "$NAMESPACE"
+fi
+
+# ======== Create Service Account ========
+echo "🔧 Creating service account: $SA_NAME"
+if ! $KUBECTL_ADMIN -n "$NAMESPACE" get sa "$SA_NAME" >/dev/null 2>&1; then
+  $KUBECTL_ADMIN -n "$NAMESPACE" create sa "$SA_NAME"
+fi
+
+# ======== Create ClusterRole ========
+echo "🔧 Creating ClusterRole: $CLUSTER_ROLE"
+$KUBECTL_ADMIN apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: $CLUSTER_ROLE
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "endpoints", "nodes", "configmaps", "secrets", "persistentvolumeclaims", "persistentvolumes", "namespaces"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["networkpolicies", "ingresses", "ingressclasses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities", "volumeattachments"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes", "pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["serviceaccounts/token"]
+  verbs: ["create"]
+  resourceNames: ["$SA_NAME"]
+EOF
+
+# ======== Create ClusterRoleBinding ========
+echo "🔧 Creating ClusterRoleBinding: $CLUSTER_BINDING"
+$KUBECTL_ADMIN create clusterrolebinding "$CLUSTER_BINDING"   --clusterrole="$CLUSTER_ROLE"   --serviceaccount="$NAMESPACE:$SA_NAME"   --dry-run=client -o yaml | $KUBECTL_ADMIN apply -f -
+
+# ======== Generate Token (using admin context) ========
+echo "🔑 Generating token for service account..."
+TOKEN=$($KUBECTL_ADMIN -n "$NAMESPACE" create token "$SA_NAME")
+
+# ======== Build Kubeconfig (using cluster info from original context) ========
+echo "🧩 Building kubeconfig for readonly access..."
+CLUSTER_NAME=$(kubectl config view -o jsonpath="{.contexts[?(@.name=='${CLUSTER_CONTEXT}')].context.cluster}")
+API_SERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name=='${CLUSTER_NAME}')].cluster.server}")
+CA_DATA=$(kubectl config view --raw -o jsonpath="{.clusters[?(@.name=='${CLUSTER_NAME}')].cluster.certificate-authority-data}")
+
+cat > "$KUBECONFIG_OUTPUT" <<EOF
+apiVersion: v1
+kind: Config
+clusters:
+- name: $CLUSTER_NAME
+  cluster:
+    server: $API_SERVER
+    certificate-authority-data: $CA_DATA
+users:
+- name: $SA_NAME
+  user:
+    token: $TOKEN
+contexts:
+- name: ${SA_NAME}-context
+  context:
+    cluster: $CLUSTER_NAME
+    user: $SA_NAME
+current-context: ${SA_NAME}-context
+EOF
+
+echo
+echo "✅ Done! Read-only kubeconfig written to: $KUBECONFIG_OUTPUT"
+echo "👉 Use it like:"
+echo "   kubectl --kubeconfig=$KUBECONFIG_OUTPUT get pods --all-namespaces"
 ```
-Apply with:
+
+#### Example: Execute Script in Azure
+
 ```sh
-kubectl apply -f kubetrace-rbac.yaml
+./kubetrace-azure.sh <cluster-name> <kubeconfig-output-path>
+```
+When you run this script, Kubetrace will automatically provision the following components in your cluster:
+    Namespace:
+    ```sh
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: kubetrace
+     ```
+
+    Cluster Role:
+    ```sh
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: kubetrace-readonly
+    rules:
+      - apiGroups: [""]
+        resources: ["pods", "services", "nodes"]
+        verbs: ["get", "list", "watch"]
+     ```
+    Cluster Role Binding:
+    ```sh
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+       name: kubetrace-readonly-binding
+    subjects:
+      - kind: ServiceAccount
+        name: kubetrace
+        namespace: kubetrace
+    roleRef:
+      kind: ClusterRole
+      name: kubetrace-readonly
+      apiGroup: rbac.authorization.k8s.io
+ 
+     ```
+
+If you encounter errors such as:
+
+```
+(AuthorizationFailed) The client '57eada60-3d78-4de3-a599-93e8d7e4f' with object id '57eada60-3d78-4de3-a599-9db2a7e4f' does not have authorization to perform action
 ```
 
-#### 4️⃣ Share Credentials
-Send the appId, password, and tenant from step 1 to the non-admin user.
+Follow the prerequisite instruction for admin access or least privilege setup.
 
-### Instructions for Non-Admin User
-
-#### 5️⃣ Login with Service Principal
-```sh
-az login --service-principal -u <appId> -p <password> --tenant <tenant>
-```
-
-#### 6️⃣ Get Cluster Credentials
-```sh
-az aks get-credentials -n <cluster-name> -g <resource-group> --overwrite-existing
-```
-
-#### 7️⃣ Apply Operator YAML
-```sh
-kubectl apply -f operator.yaml
-```
-
-#### 8️⃣ run the Script
-```sh
-./kubetrace.sh <cluster-name> ./readonly-kubeconfig.yaml
-```
 
 ### Final Steps in Kubetrace Platform
 
@@ -114,5 +339,4 @@ kubectl apply -f operator.yaml
    ```sh
    kubectl get pods -n kubetrace-readonly
    ```
-
 ---
