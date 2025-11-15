@@ -3,18 +3,50 @@ title: "Onboarding Cluster"
 description: "Step-by-step instructions for onboarding your Kubernetes cluster to Kubetrace."
 ---
 
-Steps
+# Onboard Your Cluster
 
-## Onboard Your Cluster
-Description: Set up the required namespace and permissions for Kubetrace.
+Set up the required namespace and permissions for Kubetrace by following the steps below.
 
-Once you have selected your Cloud provider and Cluster, follow these steps to onboard your cluster:
+---
 
-### Prepare to Execute the Script
+## Prerequisites
 
-In Step 3 of the platform, copy the script for creating a Readonly Service Account and execute it. **Ensure all prerequisites are satisfied before running the script.**
+Before running the onboarding script, ensure you have:
 
-```sh
+- `kubectl` installed and configured
+- Access to your Kubernetes cluster
+- Admin privileges or appropriate permissions
+- Azure CLI (for Azure clusters)
+
+---
+
+## Step 1: Prepare to Execute the Script
+
+Once you have selected your Cloud provider and Cluster in the Kubetrace platform:
+
+1. Navigate to **Step 3** of the platform
+2. Copy the script for creating a Readonly Service Account
+3. **Ensure all prerequisites are satisfied before running the script**
+
+---
+
+## Step 2: Execute the Onboarding Script
+
+### Usage
+
+```bash
+./kubetrace-azure.sh <cluster-name> <kubeconfig-output-path>
+```
+
+### Example
+
+```bash
+./kubetrace-azure.sh my-aks-cluster readonly-kubeconfig.yaml
+```
+
+### Complete Script
+
+```bash
 #!/bin/bash
 set -euo pipefail
 
@@ -238,7 +270,10 @@ EOF
 
 # ======== Create ClusterRoleBinding ========
 echo "🔧 Creating ClusterRoleBinding: $CLUSTER_BINDING"
-$KUBECTL_ADMIN create clusterrolebinding "$CLUSTER_BINDING"   --clusterrole="$CLUSTER_ROLE"   --serviceaccount="$NAMESPACE:$SA_NAME"   --dry-run=client -o yaml | $KUBECTL_ADMIN apply -f -
+$KUBECTL_ADMIN create clusterrolebinding "$CLUSTER_BINDING" \
+  --clusterrole="$CLUSTER_ROLE" \
+  --serviceaccount="$NAMESPACE:$SA_NAME" \
+  --dry-run=client -o yaml | $KUBECTL_ADMIN apply -f -
 
 # ======== Generate Token (using admin context) ========
 echo "🔑 Generating token for service account..."
@@ -276,67 +311,149 @@ echo "👉 Use it like:"
 echo "   kubectl --kubeconfig=$KUBECONFIG_OUTPUT get pods --all-namespaces"
 ```
 
-#### Example: Execute Script in Azure
+---
 
-```sh
-./kubetrace-azure.sh <cluster-name> <kubeconfig-output-path>
+## Step 3: Resources Created by the Script
+
+When you run this script, Kubetrace automatically provisions the following components in your cluster:
+
+### Namespace
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubetrace-readonly
 ```
-When you run this script, Kubetrace will automatically provision the following components in your cluster:
-    Namespace:
-    ```sh
-    apiVersion: v1
-    kind: Namespace
-    metadata:
-      name: kubetrace
+
+### Service Account
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubetrace-readonly-user
+  namespace: kubetrace-readonly
+```
+
+### ClusterRole
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubetrace-readonly-clusterrole
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints", "nodes", "configmaps", "secrets", "persistentvolumeclaims", "persistentvolumes", "namespaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies", "ingresses", "ingressclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities", "volumeattachments"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list"]
+```
+
+### ClusterRoleBinding
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubetrace-readonly-binding
+subjects:
+  - kind: ServiceAccount
+    name: kubetrace-readonly-user
+    namespace: kubetrace-readonly
+roleRef:
+  kind: ClusterRole
+  name: kubetrace-readonly-clusterrole
+  apiGroup: rbac.authorization.k8s.io
+```
+
+---
+
+## Step 4: Complete Setup in Kubetrace Platform
+
+After executing the script, follow these final steps in the Kubetrace platform:
+
+1. **Upload Kubeconfig** (Step 4)
+   - Copy the contents of the generated `kubeconfig.yaml` file
+   - Paste it into Step 4 of the Kubetrace platform
+
+2. **Add Cluster** (Step 5)
+   - Select the discovered cluster from the list
+   - Click **Add Cluster**
+   - Generate the Kubetrace operator configuration
+
+3. **Deploy Operator** (Step 6)
+   - Copy the generated `kubetrace-operator.yaml`
+   - Execute the following command:
+     ```bash
+     kubectl apply -f kubetrace-operator.yaml
      ```
 
-    Cluster Role:
-    ```sh
-    apiVersion: rbac.authorization.k8s.io/v1
-    kind: ClusterRole
-    metadata:
-      name: kubetrace-readonly
-    rules:
-      - apiGroups: [""]
-        resources: ["pods", "services", "nodes"]
-        verbs: ["get", "list", "watch"]
+4. **Verify Installation**
+   - Check that the operator is running properly:
+     ```bash
+     kubectl get pods -n kubetrace-readonly
      ```
-    Cluster Role Binding:
-    ```sh
-    apiVersion: rbac.authorization.k8s.io/v1
-    kind: ClusterRoleBinding
-    metadata:
-       name: kubetrace-readonly-binding
-    subjects:
-      - kind: ServiceAccount
-        name: kubetrace
-        namespace: kubetrace
-    roleRef:
-      kind: ClusterRole
-      name: kubetrace-readonly
-      apiGroup: rbac.authorization.k8s.io
- 
-     ```
+   - All pods should be in `Running` status
 
-If you encounter errors such as:
+---
+
+## Troubleshooting
+
+### Authorization Errors
+
+If you encounter an error like:
 
 ```
 (AuthorizationFailed) The client '57eada60-3d78-4de3-a599-93e8d7e4f' with object id '57eada60-3d78-4de3-a599-9db2a7e4f' does not have authorization to perform action
 ```
 
-Follow the prerequisite instruction for admin access or least privilege setup.
+**Solution:** Follow the prerequisite instructions for admin access or least privilege setup as described in the non-admin instructions section of the script.
 
+### Admin Context Not Found
 
-### Final Steps in Kubetrace Platform
+If you see `⚠️ Admin context not found`, ensure you have obtained admin credentials:
 
-1. After executing the scripts, copy the `kubeconfig.yaml` and paste it into Step 4 of the Kubetrace platform.
-2. In Step 5, select the discovered cluster, click **Add Cluster**, and generate the Kubetrace operator.
-3. In Step 6, copy the generated Kubetrace operator `config.yaml` and execute:
-   ```sh
-   kubectl apply -f kubetrace-operator.yaml
+```bash
+az aks get-credentials --resource-group <your-resource-group> --name <cluster-name> --admin
+```
+
+### Operator Not Running
+
+If the operator pods are not running:
+
+1. Check pod logs:
+   ```bash
+   kubectl logs -n kubetrace-readonly <pod-name>
    ```
-4. Make sure the operator is running properly:
-   ```sh
-   kubectl get pods -n kubetrace-readonly
+
+2. Verify the service account has proper permissions:
+   ```bash
+   kubectl auth can-i list pods --as=system:serviceaccount:kubetrace-readonly:kubetrace-readonly-user
    ```
+
 ---
+
+## Support
+
+For additional help or questions, please contact the Kubetrace support team or refer to the official documentation.
