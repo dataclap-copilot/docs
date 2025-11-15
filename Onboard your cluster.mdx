@@ -32,18 +32,6 @@ Once you have selected your Cloud provider and Cluster in the Kubetrace platform
 
 ## Step 2: Execute the Onboarding Script
 
-### Usage
-
-```bash
-./kubetrace-azure.sh <cluster-name> <kubeconfig-output-path>
-```
-
-### Example
-
-```bash
-./kubetrace-azure.sh my-aks-cluster readonly-kubeconfig.yaml
-```
-
 ### Complete Script
 
 ```bash
@@ -309,6 +297,12 @@ echo
 echo "✅ Done! Read-only kubeconfig written to: $KUBECONFIG_OUTPUT"
 echo "👉 Use it like:"
 echo "   kubectl --kubeconfig=$KUBECONFIG_OUTPUT get pods --all-namespaces"
+```
+
+### Example
+
+```bash
+./kubetrace-azure.sh my-aks-cluster readonly-kubeconfig.yaml
 ```
 
 ---
