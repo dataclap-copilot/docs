@@ -40,11 +40,53 @@ The operator performs the following functions:
    After generating your kubeconfig file, download the dynamically generated operator manifest from the Kubetrace dashboard:
 
    ```sh
-   # Download from Kubetrace dashboard or CLI
-   kubetrace operator download --cluster-id <your-cluster-id> -o kubetrace-operator.yaml
-   ```
-
-   Alternatively, copy the manifest directly from your dashboard's operator configuration page.
+   # Copy the operator yaml from STEP 6 of 'Add cluster' or copy it from Operator config from Clusters page.
+   ---
+apiVersion: v1
+data:
+  .dockerconfigjson: <base64-encoded-docker-config>
+  operator_token: <base64-encoded-operator-token>
+kind: Secret
+metadata:
+  name: kubetrace-dataclap-secrets
+  namespace: kubetrace-readonly
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubetrace-operator
+  namespace: kubetrace-readonly
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubetrace-operator
+  template:
+    metadata:
+      labels:
+        app: kubetrace-operator
+    spec:
+      serviceAccountName: kubetrace-readonly-user
+      imagePullSecrets:
+        - name: kubetrace-dataclap-secrets
+      containers:
+        - name: operator
+          image: <your-operator-image>
+          imagePullPolicy: Always
+          env:
+            - name: API_URL
+              value: "<your-operator-image>"
+            - name: CLUSTER_ID
+              value: "<your-cluster-id>"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi" 
+   ---
 
 2. **Review the Manifest (Optional):**
 
