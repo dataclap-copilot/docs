@@ -45,7 +45,7 @@ The operator performs the following functions:
 apiVersion: v1
 data:
   .dockerconfigjson: <base64-encoded-docker-config>
-  operator_token: <base64-encoded-operator-token>
+  operator_token: <base64-encoded-operator-token />
 kind: Secret
 metadata:
   name: kubetrace-dataclap-secrets
@@ -72,13 +72,13 @@ spec:
         - name: kubetrace-dataclap-secrets
       containers:
         - name: operator
-          image: <your-operator-image>
+          image: <your-operator-image> # (hidden for security)
           imagePullPolicy: Always
           env:
             - name: API_URL
-              value: "<your-operator-image>"
+              value: "<your-api-url>" # (hidden)
             - name: CLUSTER_ID
-              value: "<your-cluster-id>"
+              value: "<your-cluster-id>" # (hidden)
           resources:
             requests:
               cpu: "50m"
