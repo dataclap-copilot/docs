@@ -72,13 +72,13 @@ spec:
         - name: kubetrace-dataclap-secrets
       containers:
         - name: operator
-          image: <your-operator-image> # (hidden for security)
+          image: <your-operator-image /> # (hidden for security)
           imagePullPolicy: Always
           env:
             - name: API_URL
-              value: "<your-api-url>" # (hidden)
+              value: "<your-api-url />" # (hidden)
             - name: CLUSTER_ID
-              value: "<your-cluster-id>" # (hidden)
+              value: "<your-cluster-id />" # (hidden)
           resources:
             requests:
               cpu: "50m"
