@@ -18,7 +18,8 @@
             "pages": [
             "index",
             "quickstart",
-            "Onboard your cluster"
+            "Onboard your cluster",
+            "Kubetrace operator"
             ]
           }
         ]
