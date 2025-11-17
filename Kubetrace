@@ -1,0 +1,190 @@
+---
+title: Kubetrace Operator
+description: Deploy and manage the Kubetrace operator for automated cluster monitoring and secure token management
+---
+
+## Kubetrace Operator
+
+### Overview
+
+The Kubetrace Operator is a critical component that manages cluster tracing and automates secure token refresh operations. This operator is dynamically generated based on your cluster configuration and integrates with Vultr Container Registry for secure credential management.
+
+**Important:** The operator YAML manifest is **not static**. It is generated after your kubeconfig file is created and includes:
+- Cluster-specific configuration
+- Dynamically fetched registry credentials from Vultr
+- Automated token refresh mechanism that periodically updates Kubernetes authentication tokens
+
+This ensures your cluster maintains secure, up-to-date credentials without manual intervention.
+
+---
+
+### Steps
+
+#### 1. Generate and Install Kubetrace Operator
+
+**Short Description:**  
+Deploy the Kubetrace operator to manage cluster tracing and automate token refresh for secure operations.
+
+**Explanation:**  
+The Kubetrace Operator deployment process involves obtaining a dynamically generated YAML manifest that is specific to your cluster. This manifest is created after your kubeconfig file is generated and includes secure credentials fetched from the Vultr registry.
+
+The operator performs the following functions:
+- **Automated Token Refresh:** Periodically communicates with the Kubetrace API to refresh authentication tokens
+- **Secure Credential Management:** Manages image pull secrets and operator tokens stored as Kubernetes secrets
+- **Cluster Integration:** Maintains continuous connectivity between your cluster and Kubetrace monitoring services
+
+**Step-by-step Instructions:**
+
+1. **Obtain Your Cluster-Specific Operator Manifest:**
+
+   After generating your kubeconfig file, download the dynamically generated operator manifest from the Kubetrace dashboard:
+
+   ```sh
+   # Download from Kubetrace dashboard or CLI
+   kubetrace operator download --cluster-id <your-cluster-id> -o kubetrace-operator.yaml
+   ```
+
+   Alternatively, copy the manifest directly from your dashboard's operator configuration page.
+
+2. **Review the Manifest (Optional):**
+
+   The generated manifest will include:
+   - A `Secret` containing base64-encoded Docker registry credentials and operator tokens
+   - A `Deployment` configured with your cluster-specific environment variables
+   - Appropriate service account bindings
+
+3. **Apply the Operator Manifest:**
+
+   ```sh
+   kubectl apply -f kubetrace-operator.yaml
+   ```
+
+4. **Verify the Operator is Running:**
+
+   ```sh
+   kubectl get pods -n kubetrace-readonly
+   ```
+
+   Expected output:
+   ```
+   NAME                                  READY   STATUS    RESTARTS   AGE
+   kubetrace-operator-xxxxxxxxxx-xxxxx   1/1     Running   0          30s
+   ```
+
+5. **Check Operator Logs:**
+
+   ```sh
+   kubectl logs -f deployment/kubetrace-operator -n kubetrace-readonly
+   ```
+
+   You should see logs indicating successful token refresh and API connectivity.
+
+---
+
+### Operator Configuration
+
+The operator manifest includes the following key components:
+
+**Secret Configuration:**
+- Contains encrypted Docker registry credentials for pulling operator images from Vultr Container Registry
+- Includes the operator token used for authenticating with the Kubetrace API
+- All sensitive data is base64-encoded and should never be committed to version control
+
+**Deployment Configuration:**
+- Uses a dedicated service account (`kubetrace-readonly-user`) with minimal required permissions
+- Configured with environment variables including:
+  - `API_URL`: Kubetrace API endpoint for token refresh operations
+  - `CLUSTER_ID`: Your unique cluster identifier
+- Resource requests and limits ensure stable operation without excessive resource consumption
+
+**Token Refresh Mechanism:**
+- The operator automatically communicates with the Kubetrace API at regular intervals
+- Fetches fresh authentication tokens and updates the kubeconfig secret
+- Ensures uninterrupted monitoring without manual token management
+
+---
+
+### Security Considerations
+
+- **Never share your operator manifest:** It contains sensitive credentials specific to your cluster
+- **Regenerate tokens if compromised:** Use the Kubetrace dashboard to revoke and regenerate operator credentials
+- **Monitor operator logs:** Regularly check logs for any authentication failures or connectivity issues
+- **Keep operator updated:** Apply updates when new versions are released to maintain security patches
+
+---
+
+## Troubleshooting
+
+### Operator Pod Not Starting
+
+**Issue:** Operator pod is in `ImagePullBackOff` or `ErrImagePull` state
+
+**Solution:**
+- Verify the image pull secret exists:
+  ```sh
+  kubectl get secret kubetrace-dataclap-secrets -n kubetrace-readonly
+  ```
+- Check if the secret is correctly referenced in the deployment
+- Ensure network connectivity to Vultr Container Registry (blr.vultrcr.com)
+
+### Token Refresh Failures
+
+**Issue:** Logs show authentication errors when refreshing tokens
+
+**Solution:**
+- Check if the `operator_token` in the secret is valid
+- Verify the `API_URL` environment variable is correct
+- Ensure the operator has network access to gateway.kubetrace.net
+- Regenerate operator credentials from the Kubetrace dashboard if needed
+
+### Service Account Permissions
+
+**Issue:** Operator logs show permission denied errors
+
+**Solution:**
+- Verify the service account exists:
+  ```sh
+  kubectl get sa kubetrace-readonly-user -n kubetrace-readonly
+  ```
+- Check role bindings:
+  ```sh
+  kubectl get rolebinding,clusterrolebinding -n kubetrace-readonly | grep kubetrace
+  ```
+- Reapply the service account and RBAC configuration
+
+### Checking Operator Health
+
+**Commands to verify operator status:**
+
+```sh
+# Check pod status
+kubectl get pods -n kubetrace-readonly
+
+# View recent logs
+kubectl logs deployment/kubetrace-operator -n kubetrace-readonly --tail=50
+
+# Describe deployment for detailed information
+kubectl describe deployment kubetrace-operator -n kubetrace-readonly
+
+# Check secret configuration
+kubectl get secret kubetrace-dataclap-secrets -n kubetrace-readonly -o yaml
+```
+
+---
+
+## Best Practices
+
+1. **Regular Monitoring:** Set up alerts for operator pod restarts or failures
+2. **Backup Configuration:** Keep a secure backup of your operator credentials (encrypted)
+3. **Update Strategy:** Follow a rolling update strategy when upgrading the operator
+4. **Resource Allocation:** Monitor and adjust resource requests/limits based on cluster size
+5. **Network Policies:** Ensure network policies allow operator communication with Kubetrace APIs
+
+---
+
+## Kubetrace Support
+
+- **Documentation:** Visit [docs.kubetrace.net](https://docs.kubetrace.net) for detailed guides
+- **Support Portal:** Create tickets at [support.kubetrace.net](https://support.kubetrace.net)
+- **Community Forums:** Join discussions at [community.kubetrace.net](https://community.kubetrace.net)
+- **Email Support:** Contact support@kubetrace.net for urgent issues
