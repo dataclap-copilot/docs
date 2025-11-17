@@ -73,22 +73,6 @@ Deploy the Kubetrace operator to manage cluster tracing and automate token refre
                  cpu: "500m"
                  memory: "512Mi"
    ```
-          imagePullPolicy: Always
-          env:
-            - name: API_URL
-              value: "YOUR_API_URL" 
-            - name: CLUSTER_ID
-              value: "YOUR_CLUSTER_ID" 
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-
-   ```
-   
 2. **Review the Manifest (Optional):**
    The generated manifest will include:
    - A `Secret` containing base64-encoded Docker registry credentials and operator tokens
