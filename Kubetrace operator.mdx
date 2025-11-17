@@ -97,13 +97,15 @@ Deploy the Kubetrace operator to manage cluster tracing and automate token refre
 
 3. **Apply the Operator Manifest:**
 
-   ```sh
-   kubectl apply -f kubetrace-operator.yaml
-   ```
+Run the following command to deploy the operator:
+
+```bash
+kubectl apply -f kubetrace-operator.yaml
+```
 
 4. **Verify the Operator is Running:**
 
-   ```sh
+   ```bash
    kubectl get pods -n kubetrace-readonly
    ```
 
