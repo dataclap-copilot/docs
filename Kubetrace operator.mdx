@@ -25,54 +25,54 @@ This ensures your cluster maintains secure, up-to-date credentials without manua
 **Description:**  
 Deploy the Kubetrace operator to manage cluster tracing and automate token refresh for secure operations.
 
-**Explanation:**  
-The Kubetrace Operator deployment process involves obtaining a dynamically generated YAML manifest that is specific to your cluster. This manifest is created after your kubeconfig file is generated and includes secure credentials fetched from the Vultr registry.
-
-The operator performs the following functions:
-- **Automated Token Refresh:** Periodically communicates with the Kubetrace API to refresh authentication tokens
-- **Secure Credential Management:** Manages image pull secrets and operator tokens stored as Kubernetes secrets
-- **Cluster Integration:** Maintains continuous connectivity between your cluster and Kubetrace monitoring services
-
-**Step-by-step Instructions:**
-
-1. **Obtain Your Cluster-Specific Operator Manifest:**
-
-   After generating your kubeconfig file, download the dynamically generated operator manifest from the Kubetrace dashboard:
-
-   ```sh
+   ```yaml
    # Copy the operator yaml from STEP 6 of 'Add cluster' or copy it from Operator config from Clusters page.
    ---
-apiVersion: v1
-data:
-  .dockerconfigjson: "BASE64_DOCKER_CONFIG" 
-  operator_token: "BASE64_OPERATOR_TOKEN" 
-kind: Secret
-metadata:
-  name: kubetrace-dataclap-secrets
-  namespace: kubetrace-readonly
-type: kubernetes.io/dockerconfigjson
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kubetrace-operator
-  namespace: kubetrace-readonly
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: kubetrace-operator
-  template:
-    metadata:
-      labels:
-        app: kubetrace-operator
-    spec:
-      serviceAccountName: kubetrace-readonly-user
-      imagePullSecrets:
-        - name: kubetrace-dataclap-secrets
-      containers:
-        - name: operator
-          image: "YOUR_OPERATOR_IMAGE" 
+   apiVersion: v1
+   data:
+     .dockerconfigjson: "BASE64_DOCKER_CONFIG" # hidden
+     operator_token: "BASE64_OPERATOR_TOKEN" # hidden
+   kind: Secret
+   metadata:
+     name: kubetrace-dataclap-secrets
+     namespace: kubetrace-readonly
+   type: kubernetes.io/dockerconfigjson
+   ---
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: kubetrace-operator
+     namespace: kubetrace-readonly
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: kubetrace-operator
+     template:
+       metadata:
+         labels:
+           app: kubetrace-operator
+       spec:
+         serviceAccountName: kubetrace-readonly-user
+         imagePullSecrets:
+           - name: kubetrace-dataclap-secrets
+         containers:
+           - name: operator
+             image: "YOUR_OPERATOR_IMAGE" # hidden for security
+             imagePullPolicy: Always
+             env:
+               - name: API_URL
+                 value: "YOUR_API_URL" # hidden
+               - name: CLUSTER_ID
+                 value: "YOUR_CLUSTER_ID" # hidden
+             resources:
+               requests:
+                 cpu: "50m"
+                 memory: "128Mi"
+               limits:
+                 cpu: "500m"
+                 memory: "512Mi"
+   ```
           imagePullPolicy: Always
           env:
             - name: API_URL
