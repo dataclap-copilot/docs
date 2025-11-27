@@ -11,20 +11,15 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "Guides",
         "groups": [
           {
-            "group": "Main",
+            "group": "Getting started",
             "pages": [
-              "index",
-              "quickstart",
-              "Onboard your cluster",
-              "Kubetrace operator",
-              "api-reference/introduction",
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+            "index",
+            "quickstart",
+            "Onboard your cluster",
+            "Kubetrace operator"
             ]
           }
         ]
