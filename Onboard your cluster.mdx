@@ -32,17 +32,7 @@ Once you have selected your Cloud provider and Cluster in the Kubetrace platform
 
 ## Step 2: Execute the Onboarding Script
 
-Select your cloud provider and follow the corresponding instructions:
-
-<Tabs>
-  <Tab title="Azure (AKS)">
-    
-### Prerequisites for Azure
-- Azure CLI installed and configured
-- Access to your AKS cluster
-- Admin privileges or appropriate permissions
-
-### Azure Onboarding Script
+### Complete Script
 
 ```bash
 #!/bin/bash
@@ -50,12 +40,15 @@ set -euo pipefail
 
 cat <<'EOF'
 
+                                                                      
 ██   ██ ██    ██ ██████  ███████ ████████ ██████   █████   ██████ ███████
 ██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██      ██
 █████   ██    ██ ██████  █████      ██    ██████  ███████ ██      █████
 ██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██      ██
 ██   ██  ██████  ██████  ███████    ██    ██   ██ ██   ██  ██████ ███████
 
+                                                                      
+                                                                       
 EOF
 
 # ======== Input Arguments ========
@@ -68,27 +61,166 @@ CLUSTER_CONTEXT="$1"
 KUBECONFIG_OUTPUT="$2"
 ADMIN_CONTEXT="${CLUSTER_CONTEXT}-admin"
 
+# Try to get cluster info for resource group detection
+CLUSTER_NAME="$CLUSTER_CONTEXT"
+RESOURCE_GROUP=""
+
+# Attempt to get resource group from current context
+if kubectl config get-contexts -o name | grep -qx "$CLUSTER_CONTEXT"; then
+  RESOURCE_GROUP=$(kubectl config view -o jsonpath="{.contexts[?(@.name=='${CLUSTER_CONTEXT}')].context.cluster}" 2>/dev/null | sed 's/.*-\([^-]*\)$/\1/' 2>/dev/null || echo "")
+fi
+
+# ======== NON-ADMIN INSTRUCTIONS FUNCTION ========
+show_nonadmin_instructions() {
+  echo "❌ You do NOT have AKS admin access for $CLUSTER_NAME."
+  echo
+  echo "📋 INSTRUCTIONS FOR ADMIN TO SET UP NON-ADMIN ACCESS:"
+  echo "════════════════════════════════════════════════════════"
+  echo
+  echo "1️⃣ Create a Service Principal:"
+  echo "   az ad sp create-for-rbac --skip-assignment --name aks-test-nonadmin -o json > nonadmin-sp.json"
+  echo
+  echo "   📝 This will output: { "appId": "xxx", "password": "yyy", "tenant": "zzz" }"
+  echo
+  echo "2️⃣ Assign AKS Cluster User Role:"
+  echo "   az role assignment create \"
+  echo "     --assignee <appId-from-json> \"
+  echo "     --role "Azure Kubernetes Service Cluster User Role" \"
+  if [ -n "$RESOURCE_GROUP" ]; then
+    echo "     --scope \$(az aks show -n $CLUSTER_NAME -g $RESOURCE_GROUP --query id -o tsv)"
+  else
+    echo "     --scope \$(az aks show -n $CLUSTER_NAME -g <your-resource-group> --query id -o tsv)"
+  fi
+  echo
+  echo "3️⃣ Save this YAML as 'kubetrace-rbac.yaml' and apply it:"
+  echo "   ────────────────────────────────────────────────────"
+  cat <<'YAML'
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubetrace-nonadmin
+rules:
+- apiGroups: [""]
+  resources: ["namespaces", "serviceaccounts", "serviceaccounts/token", "secrets", "pods", "events"]
+  verbs: ["get", "list", "create", "update"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list", "create"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubetrace-nonadmin-binding
+subjects:
+- kind: User
+  name: "<appId-from-json>"
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: kubetrace-nonadmin
+  apiGroup: rbac.authorization.k8s.io
+YAML
+  echo "   ────────────────────────────────────────────────────"
+  echo "   kubectl apply -f kubetrace-rbac.yaml"
+  echo
+  echo "4️⃣ Share credentials with non-admin user:"
+  echo "   📤 Send them: appId, password, tenant from step 1"
+  echo
+  echo "📋 INSTRUCTIONS FOR NON-ADMIN USER:"
+  echo "══════════════════════════════════════"
+  echo
+  echo "5️⃣ Login with service principal:"
+  echo "   az login --service-principal -u <appId> -p <password> --tenant <tenant>"
+  echo
+  echo "6️⃣ Get cluster credentials:"
+  if [ -n "$RESOURCE_GROUP" ]; then
+    echo "   az aks get-credentials -n $CLUSTER_NAME -g $RESOURCE_GROUP --overwrite-existing"
+  else
+    echo "   az aks get-credentials -n $CLUSTER_NAME -g <your-resource-group> --overwrite-existing"
+  fi
+  echo
+  echo "7️⃣ Apply your operator.yaml file:"
+  echo "   kubectl apply -f operator.yaml"
+  echo
+  echo "8️⃣ Then run this script again:"
+  echo "   ./kubetrace.sh $CLUSTER_NAME readonly-kubeconfig.yaml"
+  echo
+  echo "════════════════════════════════════════════════════════"
+}
+
+# Check if admin context exists
+if kubectl config get-contexts -o name | grep -qx "$ADMIN_CONTEXT"; then
+  echo "✅ Admin context found: $ADMIN_CONTEXT"
+  echo "🔄 Switching to admin context..."
+  
+  # Test if we can actually use the admin context
+  if ! kubectl --context="$ADMIN_CONTEXT" auth can-i create clusterroles >/dev/null 2>&1; then
+    echo "❌ ERROR: Admin context '$ADMIN_CONTEXT' exists but lacks sufficient privileges."
+    echo "Unable to create cluster roles with admin context."
+    echo
+    if [ -n "$RESOURCE_GROUP" ]; then
+      echo "Please ensure you have admin credentials by running:"
+      echo "  az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_CONTEXT --admin"
+    else
+      echo "Please ensure you have admin credentials by running:"
+      echo "  az aks get-credentials --resource-group <your-resource-group> --name $CLUSTER_CONTEXT --admin"
+    fi
+    echo "Then rerun this script."
+    exit 1
+  fi
+else
+  echo "⚠️  Admin context '$ADMIN_CONTEXT' not found."
+  
+  # Check if user has basic cluster access and can create resources
+  if kubectl config get-contexts -o name | grep -qx "$CLUSTER_CONTEXT"; then
+    if kubectl --context="$CLUSTER_CONTEXT" auth can-i create clusterroles >/dev/null 2>&1; then
+      echo "✅ You have cluster admin privileges via regular context."
+      ADMIN_CONTEXT="$CLUSTER_CONTEXT"
+    else
+      echo "❌ No admin privileges detected."
+      show_nonadmin_instructions
+      exit 1
+    fi
+  else
+    echo "❌ ERROR: Cluster context '$CLUSTER_CONTEXT' not found."
+    show_nonadmin_instructions
+    exit 1
+  fi
+fi
+
+# Alias kubectl with admin context for easier use
+KUBECTL_ADMIN="kubectl --context=$ADMIN_CONTEXT"
+
 # ======== Configurable Constants ========
 NAMESPACE="kubetrace-readonly"
 SA_NAME="kubetrace-readonly-user"
 CLUSTER_ROLE="kubetrace-readonly-clusterrole"
 CLUSTER_BINDING="kubetrace-readonly-binding"
 
+# ======== Check Cluster Context Exists ========
+if ! kubectl config get-contexts -o name | grep -q "^${CLUSTER_CONTEXT}$"; then
+  echo "❌ Context '$CLUSTER_CONTEXT' not found in kubeconfig"
+  exit 1
+fi
+
 # ======== Create Namespace ========
 echo "🔧 Creating namespace: $NAMESPACE"
-if ! kubectl get ns "$NAMESPACE" >/dev/null 2>&1; then
-  kubectl create namespace "$NAMESPACE"
+if ! $KUBECTL_ADMIN get ns "$NAMESPACE" >/dev/null 2>&1; then
+  $KUBECTL_ADMIN create namespace "$NAMESPACE"
 fi
 
 # ======== Create Service Account ========
 echo "🔧 Creating service account: $SA_NAME"
-if ! kubectl -n "$NAMESPACE" get sa "$SA_NAME" >/dev/null 2>&1; then
-  kubectl -n "$NAMESPACE" create sa "$SA_NAME"
+if ! $KUBECTL_ADMIN -n "$NAMESPACE" get sa "$SA_NAME" >/dev/null 2>&1; then
+  $KUBECTL_ADMIN -n "$NAMESPACE" create sa "$SA_NAME"
 fi
 
 # ======== Create ClusterRole ========
 echo "🔧 Creating ClusterRole: $CLUSTER_ROLE"
-kubectl apply -f - <<EOF
+$KUBECTL_ADMIN apply -f - <<EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -126,16 +258,16 @@ EOF
 
 # ======== Create ClusterRoleBinding ========
 echo "🔧 Creating ClusterRoleBinding: $CLUSTER_BINDING"
-kubectl create clusterrolebinding "$CLUSTER_BINDING" \
+$KUBECTL_ADMIN create clusterrolebinding "$CLUSTER_BINDING" \
   --clusterrole="$CLUSTER_ROLE" \
   --serviceaccount="$NAMESPACE:$SA_NAME" \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --dry-run=client -o yaml | $KUBECTL_ADMIN apply -f -
 
-# ======== Generate Token ========
+# ======== Generate Token (using admin context) ========
 echo "🔑 Generating token for service account..."
-TOKEN=$(kubectl -n "$NAMESPACE" create token "$SA_NAME")
+TOKEN=$($KUBECTL_ADMIN -n "$NAMESPACE" create token "$SA_NAME")
 
-# ======== Build Kubeconfig ========
+# ======== Build Kubeconfig (using cluster info from original context) ========
 echo "🧩 Building kubeconfig for readonly access..."
 CLUSTER_NAME=$(kubectl config view -o jsonpath="{.contexts[?(@.name=='${CLUSTER_CONTEXT}')].context.cluster}")
 API_SERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name=='${CLUSTER_NAME}')].cluster.server}")
@@ -167,426 +299,11 @@ echo "👉 Use it like:"
 echo "   kubectl --kubeconfig=$KUBECONFIG_OUTPUT get pods --all-namespaces"
 ```
 
-### Usage Example
+### Example
+
 ```bash
 ./kubetrace-azure.sh my-aks-cluster readonly-kubeconfig.yaml
 ```
-
-  </Tab>
-  
-  <Tab title="AWS (EKS)">
-    
-### Prerequisites for AWS
-- AWS CLI installed and configured
-- Access to your EKS cluster
-- Appropriate IAM permissions
-
-### AWS Onboarding Script
-
-```bash
-#!/bin/bash
-set -euo pipefail
-
-cat <<'EOF'
-
-██   ██ ██    ██ ██████  ███████ ████████ ██████   █████   ██████ ███████
-██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██      ██
-█████   ██    ██ ██████  █████      ██    ██████  ███████ ██      █████
-██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██      ██
-██   ██  ██████  ██████  ███████    ██    ██   ██ ██   ██  ██████ ███████
-
-EOF
-
-if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <aws-region> <cluster-name> <kubeconfig-output-path>"
-  exit 1
-fi
-
-AWS_REGION="$1"
-CLUSTER_NAME="$2"
-KUBECONFIG_OUTPUT="$3"
-
-command -v aws >/dev/null 2>&1 || { echo "❌ aws CLI not found."; exit 1; }
-command -v kubectl >/dev/null 2>&1 || { echo "❌ kubectl not found."; exit 1; }
-
-echo "🔧 Fetching EKS cluster information..."
-aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION" >/dev/null 2>&1
-EKS_CONTEXT=$(kubectl config current-context)
-
-KUBECTL_EKS="kubectl --context=$EKS_CONTEXT"
-
-NAMESPACE="kubetrace-readonly"
-SA_NAME="kubetrace-readonly-user"
-CLUSTER_ROLE="kubetrace-readonly-clusterrole"
-CLUSTER_BINDING="kubetrace-readonly-binding"
-
-echo "🔧 Creating namespace: $NAMESPACE"
-if ! $KUBECTL_EKS get ns "$NAMESPACE" >/dev/null 2>&1; then
-  $KUBECTL_EKS create namespace "$NAMESPACE"
-fi
-
-echo "🔧 Creating service account: $SA_NAME"
-if ! $KUBECTL_EKS -n "$NAMESPACE" get sa "$SA_NAME" >/dev/null 2>&1; then
-  $KUBECTL_EKS -n "$NAMESPACE" create sa "$SA_NAME"
-fi
-
-echo "🔧 Creating ClusterRole: $CLUSTER_ROLE"
-$KUBECTL_EKS apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: $CLUSTER_ROLE
-rules:
-- apiGroups: [""]
-  resources: ["pods", "services", "endpoints", "nodes", "configmaps", "secrets", "persistentvolumeclaims", "persistentvolumes", "namespaces"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["apps"]
-  resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["batch"]
-  resources: ["jobs", "cronjobs"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["networking.k8s.io"]
-  resources: ["networkpolicies", "ingresses", "ingressclasses"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities", "volumeattachments"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["events"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["metrics.k8s.io"]
-  resources: ["nodes", "pods"]
-  verbs: ["get", "list"]
-- apiGroups: [""]
-  resources: ["serviceaccounts/token"]
-  verbs: ["create"]
-  resourceNames: ["$SA_NAME"]
-EOF
-
-echo "🔧 Creating ClusterRoleBinding: $CLUSTER_BINDING"
-$KUBECTL_EKS create clusterrolebinding "$CLUSTER_BINDING" \
-  --clusterrole="$CLUSTER_ROLE" \
-  --serviceaccount="$NAMESPACE:$SA_NAME" \
-  --dry-run=client -o yaml | $KUBECTL_EKS apply -f -
-
-echo "🔑 Generating token for service account..."
-TOKEN=$($KUBECTL_EKS -n "$NAMESPACE" create token "$SA_NAME")
-
-echo "🧩 Building kubeconfig for readonly access..."
-CLUSTER_INFO=$(kubectl config view -o jsonpath="{.contexts[?(@.name=='$EKS_CONTEXT')].context.cluster}")
-API_SERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name=='$CLUSTER_INFO')].cluster.server}")
-CA_DATA=$(kubectl config view --raw -o jsonpath="{.clusters[?(@.name=='$CLUSTER_INFO')].cluster.certificate-authority-data}")
-
-cat > "$KUBECONFIG_OUTPUT" <<EOF
-apiVersion: v1
-kind: Config
-clusters:
-- name: $CLUSTER_INFO
-  cluster:
-    server: $API_SERVER
-    certificate-authority-data: $CA_DATA
-users:
-- name: $SA_NAME
-  user:
-    token: $TOKEN
-contexts:
-- name: ${SA_NAME}-context
-  context:
-    cluster: $CLUSTER_INFO
-    user: $SA_NAME
-current-context: ${SA_NAME}-context
-EOF
-
-echo
-echo "✅ Done! Read-only kubeconfig written to: $KUBECONFIG_OUTPUT"
-echo "👉 Use it like:"
-echo "   kubectl --kubeconfig=$KUBECONFIG_OUTPUT get pods --all-namespaces"
-```
-
-### Usage Example
-```bash
-./kubetrace-aws.sh us-east-1 my-eks-cluster readonly-kubeconfig.yaml
-```
-
-  </Tab>
-  
-  <Tab title="GCP (GKE)">
-    
-### Prerequisites for GCP
-- Google Cloud CLI (gcloud) installed and configured
-- Access to your GKE cluster
-- Appropriate IAM permissions
-
-### GCP Onboarding Script
-
-```bash
-#!/bin/bash
-set -euo pipefail
-
-cat <<'EOF'
-
-██   ██ ██    ██ ██████  ███████ ████████ ██████   █████   ██████ ███████
-██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██      ██
-█████   ██    ██ ██████  █████      ██    ██████  ███████ ██      █████
-██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██      ██
-██   ██  ██████  ██████  ███████    ██    ██   ██ ██   ██  ██████ ███████
-
-EOF
-
-if [ "$#" -ne 4 ]; then
-  echo "Usage: $0 <gcp-project-id> <gke-cluster-name> <gke-zone-or-region> <kubeconfig-output-path>"
-  exit 1
-fi
-
-GCP_PROJECT="$1"
-GKE_CLUSTER="$2"
-GKE_LOCATION="$3"
-KUBECONFIG_OUTPUT="$4"
-
-command -v gcloud >/dev/null 2>&1 || { echo "❌ gcloud CLI not found."; exit 1; }
-command -v kubectl >/dev/null 2>&1 || { echo "❌ kubectl not found."; exit 1; }
-
-TEMP_KUBECONFIG=$(mktemp)
-trap "rm -f $TEMP_KUBECONFIG" EXIT
-export KUBECONFIG="$TEMP_KUBECONFIG"
-
-echo "🔧 Fetching GKE cluster credentials..."
-gcloud container clusters get-credentials "$GKE_CLUSTER" --project "$GCP_PROJECT" --zone "$GKE_LOCATION"
-
-GKE_CONTEXT=$(kubectl config current-context)
-KUBECTL_GKE="kubectl --context=$GKE_CONTEXT --kubeconfig=$TEMP_KUBECONFIG"
-
-NAMESPACE="kubetrace-readonly"
-SA_NAME="kubetrace-readonly-user"
-CLUSTER_ROLE="kubetrace-readonly-clusterrole"
-CLUSTER_BINDING="kubetrace-readonly-binding"
-
-echo "🔧 Creating namespace: $NAMESPACE"
-if ! $KUBECTL_GKE get ns "$NAMESPACE" >/dev/null 2>&1; then
-  $KUBECTL_GKE create namespace "$NAMESPACE"
-fi
-
-echo "🔧 Creating service account: $SA_NAME"
-if ! $KUBECTL_GKE -n "$NAMESPACE" get sa "$SA_NAME" >/dev/null 2>&1; then
-  $KUBECTL_GKE -n "$NAMESPACE" create sa "$SA_NAME"
-fi
-
-echo "🔧 Creating ClusterRole: $CLUSTER_ROLE"
-$KUBECTL_GKE apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: $CLUSTER_ROLE
-rules:
-- apiGroups: [""]
-  resources: ["pods", "services", "endpoints", "nodes", "configmaps", "secrets", "persistentvolumeclaims", "persistentvolumes", "namespaces"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["apps"]
-  resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["batch"]
-  resources: ["jobs", "cronjobs"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["networking.k8s.io"]
-  resources: ["networkpolicies", "ingresses", "ingressclasses"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities", "volumeattachments"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["events"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["metrics.k8s.io"]
-  resources: ["nodes", "pods"]
-  verbs: ["get", "list"]
-- apiGroups: [""]
-  resources: ["serviceaccounts/token"]
-  verbs: ["create"]
-  resourceNames: ["$SA_NAME"]
-EOF
-
-echo "🔧 Creating ClusterRoleBinding: $CLUSTER_BINDING"
-$KUBECTL_GKE create clusterrolebinding "$CLUSTER_BINDING" \
-  --clusterrole="$CLUSTER_ROLE" \
-  --serviceaccount="$NAMESPACE:$SA_NAME" \
-  --dry-run=client -o yaml | $KUBECTL_GKE apply -f -
-
-echo "🔑 Generating token for service account..."
-TOKEN=$($KUBECTL_GKE -n "$NAMESPACE" create token "$SA_NAME")
-
-echo "🧩 Building kubeconfig for readonly access..."
-CLUSTER_INFO=$(kubectl --kubeconfig="$TEMP_KUBECONFIG" config view -o jsonpath="{.contexts[?(@.name=='$GKE_CONTEXT')].context.cluster}")
-API_SERVER=$(kubectl --kubeconfig="$TEMP_KUBECONFIG" config view -o jsonpath="{.clusters[?(@.name=='$CLUSTER_INFO')].cluster.server}")
-CA_DATA=$(kubectl --kubeconfig="$TEMP_KUBECONFIG" config view --raw -o jsonpath="{.clusters[?(@.name=='$CLUSTER_INFO')].cluster.certificate-authority-data}")
-
-cat > "$KUBECONFIG_OUTPUT" <<EOF
-apiVersion: v1
-kind: Config
-clusters:
-- name: $CLUSTER_INFO
-  cluster:
-    server: $API_SERVER
-    certificate-authority-data: $CA_DATA
-users:
-- name: $SA_NAME
-  user:
-    token: $TOKEN
-contexts:
-- name: ${SA_NAME}-context
-  context:
-    cluster: $CLUSTER_INFO
-    user: $SA_NAME
-current-context: ${SA_NAME}-context
-EOF
-
-echo
-echo "✅ Done! Read-only kubeconfig written to: $KUBECONFIG_OUTPUT"
-echo "👉 Use it like:"
-echo "   kubectl --kubeconfig=$KUBECONFIG_OUTPUT get pods --all-namespaces"
-```
-
-### Usage Example
-```bash
-./kubetrace-gcp.sh my-project my-gke-cluster us-central1-a readonly-kubeconfig.yaml
-```
-
-  </Tab>
-  
-  <Tab title="Vultr (VKE)">
-    
-### Prerequisites for Vultr
-- Vultr CLI installed and configured
-- Access to your VKE cluster
-- Valid Vultr API key
-
-### Vultr Onboarding Script
-
-```bash
-#!/bin/bash
-set -euo pipefail
-
-cat <<'EOF'
-
-██   ██ ██    ██ ██████  ██      ████████ ██████  ██████  ███████
-██  ██  ██    ██ ██   ██ ██         ██    ██   ██ ██   ██ ██
-█████   ██    ██ ██████  ██         ██    ██████  ██████  █████
-██  ██  ██    ██ ██      ██         ██      ██      ██   ██ ██
-██   ██  ██████  ██      ███████    ██      ██      ██   ██ ███████
-
-        🚀 Vultr Kubernetes Read-Only Kubeconfig Setup
-EOF
-
-if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 <vultr-cluster-id> <kubeconfig-output-path>"
-  exit 1
-fi
-
-CLUSTER_ID="$1"
-KUBECONFIG_OUTPUT="$2"
-
-NAMESPACE="kubetrace-readonly"
-SA_NAME="kubetrace-readonly-user"
-CLUSTER_ROLE="kubetrace-readonly-clusterrole"
-CLUSTER_BINDING="kubetrace-readonly-binding"
-
-command -v vultr-cli >/dev/null 2>&1 || { echo "❌ vultr-cli not found"; exit 1; }
-command -v kubectl >/dev/null 2>&1 || { echo "❌ kubectl not found"; exit 1; }
-
-echo "🔧 Fetching kubeconfig for cluster $CLUSTER_ID..."
-vultr-cli kubernetes config "$CLUSTER_ID" --output temp-kubeconfig.yaml
-export KUBECONFIG="$(pwd)/temp-kubeconfig.yaml"
-
-CONTEXT_NAME=$(kubectl config current-context)
-echo "✅ Using context: $CONTEXT_NAME"
-
-if ! kubectl get ns "$NAMESPACE" >/dev/null 2>&1; then
-  echo "🔧 Creating namespace $NAMESPACE..."
-  kubectl create namespace "$NAMESPACE"
-fi
-
-if ! kubectl -n "$NAMESPACE" get sa "$SA_NAME" >/dev/null 2>&1; then
-  echo "🔧 Creating service account $SA_NAME..."
-  kubectl -n "$NAMESPACE" create sa "$SA_NAME"
-fi
-
-echo "🔧 Creating ClusterRole $CLUSTER_ROLE..."
-kubectl apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: $CLUSTER_ROLE
-rules:
-- apiGroups: [""]
-  resources: ["pods","services","nodes","namespaces","configmaps","secrets"]
-  verbs: ["get","list","watch"]
-- apiGroups: ["apps"]
-  resources: ["deployments","replicasets","statefulsets","daemonsets"]
-  verbs: ["get","list","watch"]
-- apiGroups: ["batch"]
-  resources: ["jobs","cronjobs"]
-  verbs: ["get","list","watch"]
-- apiGroups: ["metrics.k8s.io"]
-  resources: ["nodes","pods"]
-  verbs: ["get","list"]
-- apiGroups: [""]
-  resources: ["serviceaccounts/token"]
-  verbs: ["create"]
-  resourceNames: ["$SA_NAME"]
-EOF
-
-echo "🔧 Creating ClusterRoleBinding $CLUSTER_BINDING..."
-kubectl create clusterrolebinding "$CLUSTER_BINDING" \
-  --clusterrole="$CLUSTER_ROLE" \
-  --serviceaccount="$NAMESPACE:$SA_NAME" \
-  --dry-run=client -o yaml | kubectl apply -f -
-
-echo "🔑 Generating token for service account..."
-TOKEN=$(kubectl -n "$NAMESPACE" create token "$SA_NAME")
-
-echo "🧩 Building read-only kubeconfig..."
-API_SERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name=='$CONTEXT_NAME')].cluster.server}")
-CA_DATA=$(kubectl config view --raw -o jsonpath="{.clusters[?(@.name=='$CONTEXT_NAME')].cluster.certificate-authority-data}")
-
-cat > "$KUBECONFIG_OUTPUT" <<EOF
-apiVersion: v1
-kind: Config
-clusters:
-- name: $CONTEXT_NAME
-  cluster:
-    server: $API_SERVER
-    certificate-authority-data: $CA_DATA
-users:
-- name: $SA_NAME
-  user:
-    token: $TOKEN
-contexts:
-- name: ${SA_NAME}-context
-  context:
-    cluster: $CONTEXT_NAME
-    user: $SA_NAME
-current-context: ${SA_NAME}-context
-EOF
-
-echo
-echo "✅ Done! Read-only kubeconfig written to: $KUBECONFIG_OUTPUT"
-echo "👉 Example usage:"
-echo "   kubectl --kubeconfig=$KUBECONFIG_OUTPUT get pods --all-namespaces"
-```
-
-### Usage Example
-```bash
-./kubetrace-vultr.sh abc123-cluster-id readonly-kubeconfig.yaml
-```
-
-  </Tab>
-</Tabs>
 
 ---
 
