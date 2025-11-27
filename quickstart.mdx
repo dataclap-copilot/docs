@@ -1,0 +1,82 @@
+---
+title: "Quick Start"
+description: "Get your Kubernetes cluster monitored with Kubetrace in under 5 minutes"
+---
+
+# Quick Start Guide
+
+Test and monitor your Kubernetes clusters with comprehensive security, performance, and compliance checks in just a few steps.
+
+## What is Kubetrace?
+
+Kubetrace is a cloud-agnostic Kubernetes testing platform that provides:
+- **Security validation** - RBAC, pod security, secrets, and policies
+- **Performance testing** - Pod scaling, scheduling, and resource contention  
+- **Network testing** - Connectivity, DNS, and network policies under stress
+- **Storage validation** - Persistent volumes, dynamic provisioning, and failover
+- **API testing** - Stress test Kubernetes API server under load
+- **AI/ML optimization** - GPU usage and distributed training resilience
+
+---
+
+## Getting Started
+
+### Step 1: Sign Up
+1. Visit [app.kubetrace.net/register](https://app.kubetrace.net/register)
+2. Create your free account (no credit card required)
+3. Access the Kubetrace dashboard
+
+### Step 2: Connect Your Cluster
+1. **Select your cloud provider** in the Kubetrace platform
+2. **Choose your cluster** from the available options
+3. **Run the onboarding script** to create read-only service account
+
+```bash
+# Example onboarding command
+./kubetrace-azure.sh my-aks-cluster readonly-kubeconfig.yaml
+```
+
+### Step 3: Deploy the Operator
+1. **Upload your kubeconfig** to the platform
+2. **Generate the operator YAML** from the dashboard
+3. **Deploy the operator** to your cluster
+
+```bash
+kubectl apply -f kubetrace-operator.yaml
+```
+
+### Step 4: Start Testing
+- **Run automated test suites** across Security, Performance, Network, Storage, and API
+- **Schedule recurring tests** (hourly, daily, weekly, monthly)
+- **View real-time results** and topology visualization
+- **Get compliance reports** and risk assessments
+
+---
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Onboard Your Cluster" icon="server" href="/Onboard your cluster">
+    Step-by-step cluster setup and service account configuration.
+  </Card>
+  <Card title="Deploy Operator" icon="cog" href="/Kubetrace operator">
+    Install and configure the Kubetrace operator for monitoring.
+  </Card>
+  <Card title="Security Testing" icon="shield" href="https://app.kubetrace.net">
+    Validate RBAC, pod security, and compliance policies.
+  </Card>
+  <Card title="Performance Testing" icon="gauge" href="https://app.kubetrace.net">
+    Benchmark scaling, scheduling, and resource performance.
+  </Card>
+</CardGroup>
+
+---
+
+## What's Next?
+
+1. **Explore test results** in your dashboard
+2. **Set up automated scheduling** for continuous monitoring  
+3. **Invite team members** to collaborate on cluster management
+4. **Review compliance reports** and address any security risks
+
+**Need help?** Contact support at [support@kubetrace.co](mailto:support@kubetrace.co) or [book a demo](https://meetings.hubspot.com/sanjeev13).
