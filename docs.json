@@ -1,13 +1,13 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
+  "$schema": "https://docs.kubetrace.net",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Kubetrace Documentation",
   "colors": {
     "primary": "#8B5CF6",
     "light": "#A78BFA",
     "dark": "#6D28D9"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/logo/light.svg",
   "navigation": {
     "tabs": [
       {
