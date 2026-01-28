@@ -20,6 +20,13 @@
             "Onboard your cluster",
             "Kubetrace operator"
             ]
+          },
+          {
+            "group": "Guides & Info",
+            "pages": [
+              "essentials/troubleshooting",
+              "essentials/release-notes"
+            ]
           }
         ]
       }
