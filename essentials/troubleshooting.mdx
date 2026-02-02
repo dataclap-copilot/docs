@@ -7,20 +7,142 @@ description: "Common issues and solutions for Kubetrace users."
 
 Find solutions to common problems encountered while using Kubetrace. If your issue is not listed, please contact support at [support@kubetrace.co](mailto:support@kubetrace.co).
 
+## Error Code Reference
+
+Below is a comprehensive table of error codes, scenarios, and their corresponding messages you may encounter in Kubetrace:
+
+| S.No | Category            | Page/Module        | Scenario                                                                               | Error Code                | Error Message                                                                         |
+|------|---------------------|--------------------|----------------------------------------------------------------------------------------|---------------------------|---------------------------------------------------------------------------------------|
+| 1    | Authentication      | Login              | Wrong password                                                                         | 401(Unauthorized)         | Login failed                                                                          |
+| 2    | Registration        | Register           | Email already registered                                                               | 400(Bad request)          | Email already registered                                                              |
+| 3    | Registration        | Register           | Invalid / temporary email                                                              | 400(Bad request)          | Please use a valid, permanent email address to continue                               |
+| 4    | Routing             | Common             | API / Page not found                                                                   | 404(Not found)            | Page Not Found                                                                             |
+| 5    | Subscription        | Access Control     | Subscription plan not allowed                                                          | 404(Not found)            | Your subscription plan not allowed to Add cluster                                     |
+| 6    | Team                | Myteam             | Invitation for non-Kubetrace user                                                      | 422(Unprocessable Entity) | user not registered in kubetrace                                                      |
+| 7    | Topology            | topology main page | If selected cluster disconnected, topology will faill                                  | 500 (internal server)     | Failed to fetch topology                                                              |
+| 8    | cluster             | Cluster main page  | If user have executer permission and try to Add/Delete the team cluster                | 410(Gone)                 | not authorized, your role is not authorized to Add/Delete this cluster                |
+| 9    | cluster             | Cluster main page  | If user have executer permission and try to Enable/Disable the team cluster            | 410(Gone)                 | not authorized, your role is not authorized to Enable/DIsable this cluster            |
+| 10   | cluster             | Cluster main page  | If user have Cluster-manager permission and try to execute test run the team cluster   | 410(Gone)                 | not authorized, your role is not authorized to execute the teat run from this cluster |
+| 11   | cluster             | Cluster main page  | If user have Cluster-manager permission and try to create schedule in the team cluster | 410(Gone)                 | not authorized, your role is not authorized to create the schedule from this cluster  |
+| 12   | Cluster/test suites | Common             | if page is not loaded                                                                  | 504                       | No data available                                                                     |
+| 13   | Cluster             | Add Cluster        | Wrong kubeconfig / invalid config                                                      | 403(Forbidden)            | Please check your kubeconfig                                                          |
+| 14   | Cluster             | Add Cluster        | Cluster already added                                                                  | 409(Conflict)             | Failed to add cluster                                                                 |
+
 ## Common Issues
 
 ### 1. Cannot Connect Cluster
-- Ensure your kubeconfig is correct and up to date.
-- Check network connectivity between your machine and the Kubernetes API server.
 
-### 2. Operator Deployment Fails
-- Verify you have the necessary permissions to deploy resources.
-- Check for typos or missing fields in the YAML file.
+**Symptoms:**
+- Unable to establish connection to your Kubernetes cluster
+- Connection timeout errors
 
-### 3. Test Results Not Showing
-- Make sure the operator is running and healthy in your cluster.
-- Refresh the dashboard and check logs for errors.
+**Solutions:**
+- Ensure your kubeconfig file is correct and up to date
+- Verify the cluster API server endpoint is accessible
+- Check network connectivity between your machine and the Kubernetes API server
+- Confirm that your firewall settings allow outbound connections to the cluster
+- Validate that your credentials in the kubeconfig have not expired
 
 ---
 
-For more help, visit our [Support Page](mailto:support@kubetrace.co).
+### 2. Operator Deployment Fails
+
+**Symptoms:**
+- Operator pod fails to start
+- Deployment errors in Kubernetes
+
+**Solutions:**
+- Verify you have the necessary permissions (RBAC) to deploy resources in the cluster
+- Check for typos or missing fields in the YAML manifest file
+- Ensure the namespace exists before deploying
+- Review operator logs using `kubectl logs` for detailed error messages
+- Confirm that required Custom Resource Definitions (CRDs) are installed
+
+---
+
+### 3. Test Results Not Showing
+
+**Symptoms:**
+- Dashboard shows no test results
+- Test execution completes but data is not visible
+
+**Solutions:**
+- Confirm the operator is running and healthy: `kubectl get pods -n <namespace>`
+- Refresh the dashboard and clear your browser cache
+- Check operator logs for any errors: `kubectl logs <operator-pod> -n <namespace>`
+- Verify that the test configuration is correct
+- Ensure network connectivity between the operator and the Kubetrace backend
+
+---
+
+### 4. Authentication Issues
+
+**Error Codes:** 401, 403
+
+**Solutions:**
+- Verify your login credentials are correct
+- Clear browser cookies and try logging in again
+- Reset your password if needed
+- Contact support if the issue persists
+
+---
+
+### 5. Permission Denied Errors
+
+**Error Codes:** 410, 403
+
+**Solutions:**
+- Check your user role and permissions in Kubetrace
+- Contact your team administrator to request appropriate access
+- Verify you're performing actions within your role's scope (executor vs cluster-manager)
+
+---
+
+### 6. Cluster Addition Problems
+
+**Error Codes:** 403, 409, 500
+
+**Solutions:**
+- **Wrong kubeconfig (403):** Validate your kubeconfig file format and credentials
+- **Cluster already added (409):** Check if the cluster is already registered in your account
+- **Internal errors (500):** Wait a few moments and try again, or contact support
+
+---
+
+### 7. Topology View Issues
+
+**Error Code:** 500
+
+**Solutions:**
+- Verify the selected cluster is connected and healthy
+- Check if the cluster has network connectivity to the Kubetrace service
+- Refresh the topology page
+- Ensure the cluster operator is running properly
+
+---
+
+## Getting Additional Help
+
+If you continue experiencing issues after trying these solutions:
+
+1. **Check the Status Page:** Visit our status page to see if there are any known service interruptions
+2. **Review Documentation:** Consult our comprehensive documentation at [docs.kubetrace.co](https://docs.kubetrace.co)
+3. **Contact Support:** Email us at [support@kubetrace.co](mailto:support@kubetrace.co) with:
+   - Description of the issue
+   - Error code (if applicable)
+   - Steps to reproduce
+   - Screenshots (if relevant)
+   - Your cluster and Kubetrace version information
+
+---
+
+## Preventive Measures
+
+To minimize issues:
+
+- Keep your Kubetrace operator updated to the latest version
+- Regularly review and update your kubeconfig files
+- Monitor cluster health and resource usage
+- Set up proper RBAC policies
+- Review operator logs periodically
+- Maintain good network connectivity between clusters and Kubetrace services
