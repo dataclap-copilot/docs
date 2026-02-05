@@ -9,24 +9,469 @@ Find solutions to common problems encountered while using Kubetrace. If your iss
 
 ## Error Code Reference
 
-Below is a comprehensive table of error codes, scenarios, and their corresponding messages you may encounter in Kubetrace:
+Below is a comprehensive list of error codes you may encounter in Kubetrace. Click on any error to see detailed information and solutions.
 
-| S.No | Category            | Page/Module        | Scenario                                                                               | Error Code                | Error Message                                                                         |
-|------|---------------------|--------------------|----------------------------------------------------------------------------------------|---------------------------|---------------------------------------------------------------------------------------|
-| 1    | Authentication      | Login              | Wrong password                                                                         | 401(Unauthorized)         | Login failed                                                                          |
-| 2    | Registration        | Register           | Email already registered                                                               | 400(Bad request)          | Email already registered                                                              |
-| 3    | Registration        | Register           | Invalid / temporary email                                                              | 400(Bad request)          | Please use a valid, permanent email address to continue                               |
-| 4    | Routing             | Common             | API / Page not found                                                                   | 404(Not found)            | Page Not Found                                                                             |
-| 5    | Subscription        | Access Control     | Subscription plan not allowed                                                          | 404(Not found)            | Your subscription plan not allowed to Add cluster                                     |
-| 6    | Team                | Myteam             | Invitation for non-Kubetrace user                                                      | 422(Unprocessable Entity) | user not registered in kubetrace                                                      |
-| 7    | Topology            | topology main page | If selected cluster disconnected, topology will faill                                  | 500 (internal server)     | Failed to fetch topology                                                              |
-| 8    | cluster             | Cluster main page  | If user have executer permission and try to Add/Delete the team cluster                | 410(Gone)                 | not authorized, your role is not authorized to Add/Delete this cluster                |
-| 9    | cluster             | Cluster main page  | If user have executer permission and try to Enable/Disable the team cluster            | 410(Gone)                 | not authorized, your role is not authorized to Enable/DIsable this cluster            |
-| 10   | cluster             | Cluster main page  | If user have Cluster-manager permission and try to execute test run the team cluster   | 410(Gone)                 | not authorized, your role is not authorized to execute the teat run from this cluster |
-| 11   | cluster             | Cluster main page  | If user have Cluster-manager permission and try to create schedule in the team cluster | 410(Gone)                 | not authorized, your role is not authorized to create the schedule from this cluster  |
-| 12   | Cluster/test suites | Common             | if page is not loaded                                                                  | 504                       | No data available                                                                     |
-| 13   | Cluster             | Add Cluster        | Wrong kubeconfig / invalid config                                                      | 403(Forbidden)            | Please check your kubeconfig                                                          |
-| 14   | Cluster             | Add Cluster        | Cluster already added                                                                  | 409(Conflict)             | Failed to add cluster                                                                 |
+<Accordion type="single" collapsible>
+  <AccordionItem value="error-1">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>401 Unauthorized</strong> - Login Failed</span>
+        <span className="text-sm text-muted-foreground">Authentication</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Login
+        </div>
+        <div>
+          <strong>Scenario:</strong> Wrong password
+        </div>
+        <div>
+          <strong>Error Message:</strong> Login failed
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Verify your login credentials are correct</li>
+            <li>Check for caps lock and ensure correct password capitalization</li>
+            <li>Reset your password if needed</li>
+            <li>Clear browser cookies and try logging in again</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-2">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>400 Bad Request</strong> - Email Already Registered</span>
+        <span className="text-sm text-muted-foreground">Registration</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Register
+        </div>
+        <div>
+          <strong>Scenario:</strong> Email already registered
+        </div>
+        <div>
+          <strong>Error Message:</strong> Email already registered
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Use the login page if you already have an account</li>
+            <li>Try the "Forgot Password" option to recover your account</li>
+            <li>Use a different email address if you want to create a new account</li>
+            <li>Contact support if you believe this is an error</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-3">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>400 Bad Request</strong> - Invalid Email</span>
+        <span className="text-sm text-muted-foreground">Registration</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Register
+        </div>
+        <div>
+          <strong>Scenario:</strong> Invalid / temporary email
+        </div>
+        <div>
+          <strong>Error Message:</strong> Please use a valid, permanent email address to continue
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Avoid using temporary or disposable email services</li>
+            <li>Use a corporate or personal email address from a recognized provider</li>
+            <li>Ensure the email format is correct (e.g., user@domain.com)</li>
+            <li>Check for typos in the email address</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-4">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>404 Not Found</strong> - Page Not Found</span>
+        <span className="text-sm text-muted-foreground">Routing</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Common
+        </div>
+        <div>
+          <strong>Scenario:</strong> API / Page not found
+        </div>
+        <div>
+          <strong>Error Message:</strong> Not Found
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Check the URL for typos or incorrect paths</li>
+            <li>Navigate back to the dashboard and try accessing the page again</li>
+            <li>Clear browser cache and reload the page</li>
+            <li>Ensure you're using the correct Kubetrace domain</li>
+            <li>Contact support if the page should exist but isn't accessible</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-5">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>404 Not Found</strong> - Subscription Restriction</span>
+        <span className="text-sm text-muted-foreground">Subscription</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Access Control
+        </div>
+        <div>
+          <strong>Scenario:</strong> Subscription plan not allowed
+        </div>
+        <div>
+          <strong>Error Message:</strong> Your subscription plan not allowed to Add cluster
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Review your current subscription plan limits</li>
+            <li>Upgrade your subscription to add more clusters</li>
+            <li>Remove unused clusters to free up capacity</li>
+            <li>Contact sales to discuss enterprise options</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-6">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>422 Unprocessable Entity</strong> - User Not Found</span>
+        <span className="text-sm text-muted-foreground">Team</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Myteam
+        </div>
+        <div>
+          <strong>Scenario:</strong> Invitation for non-Kubetrace user
+        </div>
+        <div>
+          <strong>Error Message:</strong> user not registered in kubetrace
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Ask the user to register for Kubetrace first</li>
+            <li>Verify the email address is correct</li>
+            <li>Send them an invitation link to sign up</li>
+            <li>Once registered, resend the team invitation</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-7">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>500 Internal Server Error</strong> - Topology Failed</span>
+        <span className="text-sm text-muted-foreground">Topology</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Topology main page
+        </div>
+        <div>
+          <strong>Scenario:</strong> If selected cluster disconnected, topology will fail
+        </div>
+        <div>
+          <strong>Error Message:</strong> Failed to fetch topology
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Verify the selected cluster is connected and healthy</li>
+            <li>Check cluster status in the cluster management page</li>
+            <li>Ensure the cluster operator is running properly</li>
+            <li>Verify network connectivity between the cluster and Kubetrace service</li>
+            <li>Try selecting a different cluster to see if the issue persists</li>
+            <li>Refresh the topology page after ensuring cluster connectivity</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-8">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>410 Gone</strong> - Add/Delete Cluster Unauthorized</span>
+        <span className="text-sm text-muted-foreground">Cluster</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Cluster main page
+        </div>
+        <div>
+          <strong>Scenario:</strong> If user have executer permission and try to Add/Delete the team cluster
+        </div>
+        <div>
+          <strong>Error Message:</strong> not authorized, your role is not authorized to Add/Delete this cluster
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Check your user role - Executor role cannot add/delete clusters</li>
+            <li>Contact your team administrator to request Cluster-Manager permissions</li>
+            <li>Only users with Cluster-Manager or Admin roles can add/delete clusters</li>
+            <li>Review team permission settings if you believe this is an error</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-9">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>410 Gone</strong> - Enable/Disable Cluster Unauthorized</span>
+        <span className="text-sm text-muted-foreground">Cluster</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Cluster main page
+        </div>
+        <div>
+          <strong>Scenario:</strong> If user have executer permission and try to Enable/Disable the team cluster
+        </div>
+        <div>
+          <strong>Error Message:</strong> not authorized, your role is not authorized to Enable/Disable this cluster
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Verify your user role permissions</li>
+            <li>Request Cluster-Manager role from your team administrator</li>
+            <li>Only authorized roles can enable/disable clusters</li>
+            <li>Contact support if you need help with role assignments</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-10">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>410 Gone</strong> - Execute Test Run Unauthorized</span>
+        <span className="text-sm text-muted-foreground">Cluster</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Cluster main page
+        </div>
+        <div>
+          <strong>Scenario:</strong> If user have Cluster-manager permission and try to execute test run the team cluster
+        </div>
+        <div>
+          <strong>Error Message:</strong> not authorized, your role is not authorized to execute the test run from this cluster
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Check your role - Cluster-Manager role cannot execute test runs</li>
+            <li>Request Executor permissions from your team administrator</li>
+            <li>Only users with Executor role can run tests</li>
+            <li>Verify the role-based access control (RBAC) settings for your team</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-11">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>410 Gone</strong> - Create Schedule Unauthorized</span>
+        <span className="text-sm text-muted-foreground">Cluster</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Cluster main page
+        </div>
+        <div>
+          <strong>Scenario:</strong> If user have Cluster-manager permission and try to create schedule in the team cluster
+        </div>
+        <div>
+          <strong>Error Message:</strong> not authorized, your role is not authorized to create the schedule from this cluster
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Verify you have the appropriate role to create schedules</li>
+            <li>Contact your team administrator for Executor permissions</li>
+            <li>Review the permission requirements for schedule creation</li>
+            <li>Check team settings to understand role capabilities</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-12">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>504 Gateway Timeout</strong> - No Data Available</span>
+        <span className="text-sm text-muted-foreground">Cluster/Test Suites</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Common
+        </div>
+        <div>
+          <strong>Scenario:</strong> If page is not loaded
+        </div>
+        <div>
+          <strong>Error Message:</strong> No data available
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Refresh the page and try again</li>
+            <li>Check your internet connection</li>
+            <li>Verify the cluster is accessible and responding</li>
+            <li>Clear browser cache and reload</li>
+            <li>Wait a few moments and retry - there may be temporary connectivity issues</li>
+            <li>Contact support if the issue persists</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-13">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>403 Forbidden</strong> - Invalid Kubeconfig</span>
+        <span className="text-sm text-muted-foreground">Cluster</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Add Cluster
+        </div>
+        <div>
+          <strong>Scenario:</strong> Wrong kubeconfig / invalid config
+        </div>
+        <div>
+          <strong>Error Message:</strong> Please check your kubeconfig
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Validate your kubeconfig file format is correct</li>
+            <li>Ensure the cluster API server endpoint is accessible</li>
+            <li>Verify your credentials in the kubeconfig have not expired</li>
+            <li>Check for typos or missing fields in the YAML file</li>
+            <li>Test the kubeconfig with kubectl to ensure it works</li>
+            <li>Regenerate the kubeconfig from your cluster if needed</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+
+  <AccordionItem value="error-14">
+    <AccordionTrigger>
+      <div className="flex items-center justify-between w-full">
+        <span><strong>409 Conflict</strong> - Cluster Already Added</span>
+        <span className="text-sm text-muted-foreground">Cluster</span>
+      </div>
+    </AccordionTrigger>
+    <AccordionContent>
+      <div className="space-y-2">
+        <div>
+          <strong>Module:</strong> Add Cluster
+        </div>
+        <div>
+          <strong>Scenario:</strong> Cluster already added
+        </div>
+        <div>
+          <strong>Error Message:</strong> Failed to add cluster
+        </div>
+        <div>
+          <strong>Solution:</strong>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Check if the cluster is already registered in your account</li>
+            <li>Review the cluster list to find the existing cluster</li>
+            <li>Use a different cluster name if you want to add it as a separate entry</li>
+            <li>Remove the existing cluster first if you want to re-add it with new credentials</li>
+            <li>Contact support if you believe this is an error</li>
+          </ul>
+        </div>
+      </div>
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+## Quick Error Code Lookup
+
+Use this table for quick reference to find error codes:
+
+| Error Code | Category | Primary Issue |
+|------------|----------|---------------|
+| 400 | Registration | Invalid email or duplicate registration |
+| 401 | Authentication | Wrong password or unauthorized access |
+| 403 | Cluster | Invalid kubeconfig or forbidden access |
+| 404 | Routing/Subscription | Page not found or subscription limits |
+| 409 | Cluster | Duplicate cluster addition |
+| 410 | Cluster | Permission denied for role-specific actions |
+| 422 | Team | User not registered |
+| 500 | Topology | Server error or cluster disconnected |
+| 504 | Common | Gateway timeout or data unavailable |
+
+---
 
 ## Common Issues
 
@@ -75,19 +520,7 @@ Below is a comprehensive table of error codes, scenarios, and their correspondin
 
 ---
 
-### 4. Authentication Issues
-
-**Error Codes:** 401, 403
-
-**Solutions:**
-- Verify your login credentials are correct
-- Clear browser cookies and try logging in again
-- Reset your password if needed
-- Contact support if the issue persists
-
----
-
-### 5. Permission Denied Errors
+### 4. Permission Denied Errors
 
 **Error Codes:** 410, 403
 
@@ -95,29 +528,7 @@ Below is a comprehensive table of error codes, scenarios, and their correspondin
 - Check your user role and permissions in Kubetrace
 - Contact your team administrator to request appropriate access
 - Verify you're performing actions within your role's scope (executor vs cluster-manager)
-
----
-
-### 6. Cluster Addition Problems
-
-**Error Codes:** 403, 409, 500
-
-**Solutions:**
-- **Wrong kubeconfig (403):** Validate your kubeconfig file format and credentials
-- **Cluster already added (409):** Check if the cluster is already registered in your account
-- **Internal errors (500):** Wait a few moments and try again, or contact support
-
----
-
-### 7. Topology View Issues
-
-**Error Code:** 500
-
-**Solutions:**
-- Verify the selected cluster is connected and healthy
-- Check if the cluster has network connectivity to the Kubetrace service
-- Refresh the topology page
-- Ensure the cluster operator is running properly
+- Review the role-based access control documentation
 
 ---
 
