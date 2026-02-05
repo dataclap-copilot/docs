@@ -9,531 +9,211 @@ Find solutions to common problems encountered while using Kubetrace. If your iss
 
 ## Error Code Reference
 
-Below is a comprehensive table of error codes, scenarios, and their corresponding messages you may encounter in Kubetrace. Click on any row to expand and see the error message and detailed solutions.
+Below is a comprehensive list of error codes you may encounter in Kubetrace. Click on any error to expand and see the error message and detailed solutions.
 
-<div className="error-table-container">
-  <table>
-    <thead>
-      <tr>
-        <th>S.No</th>
-        <th>Category</th>
-        <th>Page/Module</th>
-        <th>Scenario</th>
-        <th>Error Code</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">1</span>
-              <span className="cell">Authentication</span>
-              <span className="cell">Login</span>
-              <span className="cell">Wrong password</span>
-              <span className="cell error-code">401 (Unauthorized)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>Login failed</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>Verify your login credentials are correct</li>
-                  <li>Check for caps lock and ensure correct password capitalization</li>
-                  <li>Reset your password if needed using the "Forgot Password" option</li>
-                  <li>Clear browser cookies and try logging in again</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+<AccordionGroup>
+  <Accordion title="401 (Unauthorized) - Login Failed | Authentication | Login">
+    **Scenario:** Wrong password
+    
+    **Error Message:** Login failed
+    
+    **Description & Solution:**
+    - Verify your login credentials are correct
+    - Check for caps lock and ensure correct password capitalization
+    - Reset your password if needed using the "Forgot Password" option
+    - Clear browser cookies and try logging in again
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">2</span>
-              <span className="cell">Registration</span>
-              <span className="cell">Register</span>
-              <span className="cell">Email already registered</span>
-              <span className="cell error-code">400 (Bad Request)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>Email already registered</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>This email address is already associated with an existing account</li>
-                  <li>Use the login page if you already have an account</li>
-                  <li>Try the "Forgot Password" option to recover your account</li>
-                  <li>Use a different email address if you want to create a new account</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="400 (Bad Request) - Email Already Registered | Registration | Register">
+    **Scenario:** Email already registered
+    
+    **Error Message:** Email already registered
+    
+    **Description & Solution:**
+    - This email address is already associated with an existing account
+    - Use the login page if you already have an account
+    - Try the "Forgot Password" option to recover your account
+    - Use a different email address if you want to create a new account
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">3</span>
-              <span className="cell">Registration</span>
-              <span className="cell">Register</span>
-              <span className="cell">Invalid / temporary email</span>
-              <span className="cell error-code">400 (Bad Request)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>Please use a valid, permanent email address to continue</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>Temporary or disposable email addresses are not accepted</li>
-                  <li>Use a corporate or personal email address from a recognized provider</li>
-                  <li>Ensure the email format is correct (e.g., user@domain.com)</li>
-                  <li>Check for typos in the email address</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="400 (Bad Request) - Invalid Email | Registration | Register">
+    **Scenario:** Invalid / temporary email
+    
+    **Error Message:** Please use a valid, permanent email address to continue
+    
+    **Description & Solution:**
+    - Temporary or disposable email addresses are not accepted
+    - Use a corporate or personal email address from a recognized provider
+    - Ensure the email format is correct (e.g., user@domain.com)
+    - Check for typos in the email address
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">4</span>
-              <span className="cell">Routing</span>
-              <span className="cell">Common</span>
-              <span className="cell">API / Page not found</span>
-              <span className="cell error-code">404 (Not Found)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>Not Found</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>The requested page or API endpoint does not exist</li>
-                  <li>Check the URL for typos or incorrect paths</li>
-                  <li>Navigate back to the dashboard and try accessing the page again</li>
-                  <li>Clear browser cache and reload the page</li>
-                  <li>Contact support if the page should exist but isn't accessible</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="404 (Not Found) - Page Not Found | Routing | Common">
+    **Scenario:** API / Page not found
+    
+    **Error Message:** Not Found
+    
+    **Description & Solution:**
+    - The requested page or API endpoint does not exist
+    - Check the URL for typos or incorrect paths
+    - Navigate back to the dashboard and try accessing the page again
+    - Clear browser cache and reload the page
+    - Contact support if the page should exist but isn't accessible
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">5</span>
-              <span className="cell">Subscription</span>
-              <span className="cell">Access Control</span>
-              <span className="cell">Subscription plan not allowed</span>
-              <span className="cell error-code">404 (Not Found)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>Your subscription plan not allowed to Add cluster</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>Your current subscription plan has reached the cluster limit</li>
-                  <li>Review your current subscription plan limits in account settings</li>
-                  <li>Upgrade your subscription to add more clusters</li>
-                  <li>Remove unused clusters to free up capacity</li>
-                  <li>Contact sales to discuss enterprise options</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="404 (Not Found) - Subscription Restriction | Subscription | Access Control">
+    **Scenario:** Subscription plan not allowed
+    
+    **Error Message:** Your subscription plan not allowed to Add cluster
+    
+    **Description & Solution:**
+    - Your current subscription plan has reached the cluster limit
+    - Review your current subscription plan limits in account settings
+    - Upgrade your subscription to add more clusters
+    - Remove unused clusters to free up capacity
+    - Contact sales to discuss enterprise options
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">6</span>
-              <span className="cell">Team</span>
-              <span className="cell">Myteam</span>
-              <span className="cell">Invitation for non-Kubetrace user</span>
-              <span className="cell error-code">422 (Unprocessable Entity)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>user not registered in kubetrace</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>The invited user does not have a Kubetrace account</li>
-                  <li>Ask the user to register for Kubetrace first at the registration page</li>
-                  <li>Verify the email address is correct</li>
-                  <li>Send them an invitation link to sign up</li>
-                  <li>Once registered, resend the team invitation</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="422 (Unprocessable Entity) - User Not Found | Team | Myteam">
+    **Scenario:** Invitation for non-Kubetrace user
+    
+    **Error Message:** user not registered in kubetrace
+    
+    **Description & Solution:**
+    - The invited user does not have a Kubetrace account
+    - Ask the user to register for Kubetrace first at the registration page
+    - Verify the email address is correct
+    - Send them an invitation link to sign up
+    - Once registered, resend the team invitation
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">7</span>
-              <span className="cell">Topology</span>
-              <span className="cell">Topology main page</span>
-              <span className="cell">If selected cluster disconnected, topology will fail</span>
-              <span className="cell error-code">500 (Internal Server Error)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>Failed to fetch topology</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>The selected cluster is disconnected or unreachable</li>
-                  <li>Verify the selected cluster is connected and healthy in cluster management</li>
-                  <li>Check cluster status and ensure it's online</li>
-                  <li>Ensure the cluster operator is running properly</li>
-                  <li>Verify network connectivity between the cluster and Kubetrace service</li>
-                  <li>Try selecting a different cluster to isolate the issue</li>
-                  <li>Refresh the topology page after ensuring cluster connectivity</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="500 (Internal Server Error) - Topology Failed | Topology | Topology main page">
+    **Scenario:** If selected cluster disconnected, topology will fail
+    
+    **Error Message:** Failed to fetch topology
+    
+    **Description & Solution:**
+    - The selected cluster is disconnected or unreachable
+    - Verify the selected cluster is connected and healthy in cluster management
+    - Check cluster status and ensure it's online
+    - Ensure the cluster operator is running properly
+    - Verify network connectivity between the cluster and Kubetrace service
+    - Try selecting a different cluster to isolate the issue
+    - Refresh the topology page after ensuring cluster connectivity
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">8</span>
-              <span className="cell">Cluster</span>
-              <span className="cell">Cluster main page</span>
-              <span className="cell">If user have executer permission and try to Add/Delete the team cluster</span>
-              <span className="cell error-code">410 (Gone)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>not authorized, your role is not authorized to Add/Delete this cluster</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>Users with Executor role cannot add or delete clusters</li>
-                  <li>Check your user role in team settings</li>
-                  <li>Contact your team administrator to request Cluster-Manager permissions</li>
-                  <li>Only users with Cluster-Manager or Admin roles can add/delete clusters</li>
-                  <li>Review team permission documentation for role capabilities</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="410 (Gone) - Add/Delete Cluster Unauthorized | Cluster | Cluster main page">
+    **Scenario:** If user have executer permission and try to Add/Delete the team cluster
+    
+    **Error Message:** not authorized, your role is not authorized to Add/Delete this cluster
+    
+    **Description & Solution:**
+    - Users with Executor role cannot add or delete clusters
+    - Check your user role in team settings
+    - Contact your team administrator to request Cluster-Manager permissions
+    - Only users with Cluster-Manager or Admin roles can add/delete clusters
+    - Review team permission documentation for role capabilities
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">9</span>
-              <span className="cell">Cluster</span>
-              <span className="cell">Cluster main page</span>
-              <span className="cell">If user have executer permission and try to Enable/Disable the team cluster</span>
-              <span className="cell error-code">410 (Gone)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>not authorized, your role is not authorized to Enable/Disable this cluster</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>Users with Executor role cannot enable or disable clusters</li>
-                  <li>Verify your user role permissions in team settings</li>
-                  <li>Request Cluster-Manager role from your team administrator</li>
-                  <li>Only authorized roles can manage cluster state</li>
-                  <li>Contact support if you need help with role assignments</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="410 (Gone) - Enable/Disable Cluster Unauthorized | Cluster | Cluster main page">
+    **Scenario:** If user have executer permission and try to Enable/Disable the team cluster
+    
+    **Error Message:** not authorized, your role is not authorized to Enable/Disable this cluster
+    
+    **Description & Solution:**
+    - Users with Executor role cannot enable or disable clusters
+    - Verify your user role permissions in team settings
+    - Request Cluster-Manager role from your team administrator
+    - Only authorized roles can manage cluster state
+    - Contact support if you need help with role assignments
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">10</span>
-              <span className="cell">Cluster</span>
-              <span className="cell">Cluster main page</span>
-              <span className="cell">If user have Cluster-manager permission and try to execute test run the team cluster</span>
-              <span className="cell error-code">410 (Gone)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>not authorized, your role is not authorized to execute the test run from this cluster</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>Users with Cluster-Manager role cannot execute test runs</li>
-                  <li>Check your role - only Executor role can run tests</li>
-                  <li>Request Executor permissions from your team administrator</li>
-                  <li>Verify the role-based access control (RBAC) settings for your team</li>
-                  <li>Review documentation on role separation between cluster management and test execution</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="410 (Gone) - Execute Test Run Unauthorized | Cluster | Cluster main page">
+    **Scenario:** If user have Cluster-manager permission and try to execute test run the team cluster
+    
+    **Error Message:** not authorized, your role is not authorized to execute the test run from this cluster
+    
+    **Description & Solution:**
+    - Users with Cluster-Manager role cannot execute test runs
+    - Check your role - only Executor role can run tests
+    - Request Executor permissions from your team administrator
+    - Verify the role-based access control (RBAC) settings for your team
+    - Review documentation on role separation between cluster management and test execution
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">11</span>
-              <span className="cell">Cluster</span>
-              <span className="cell">Cluster main page</span>
-              <span className="cell">If user have Cluster-manager permission and try to create schedule in the team cluster</span>
-              <span className="cell error-code">410 (Gone)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>not authorized, your role is not authorized to create the schedule from this cluster</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>Users with Cluster-Manager role cannot create test schedules</li>
-                  <li>Verify you have the appropriate role to create schedules</li>
-                  <li>Contact your team administrator for Executor permissions</li>
-                  <li>Review the permission requirements for schedule creation</li>
-                  <li>Check team settings to understand role capabilities</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="410 (Gone) - Create Schedule Unauthorized | Cluster | Cluster main page">
+    **Scenario:** If user have Cluster-manager permission and try to create schedule in the team cluster
+    
+    **Error Message:** not authorized, your role is not authorized to create the schedule from this cluster
+    
+    **Description & Solution:**
+    - Users with Cluster-Manager role cannot create test schedules
+    - Verify you have the appropriate role to create schedules
+    - Contact your team administrator for Executor permissions
+    - Review the permission requirements for schedule creation
+    - Check team settings to understand role capabilities
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">12</span>
-              <span className="cell">Cluster/Test Suites</span>
-              <span className="cell">Common</span>
-              <span className="cell">If page is not loaded</span>
-              <span className="cell error-code">504 (Gateway Timeout)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>No data available</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>The page failed to load data within the timeout period</li>
-                  <li>Refresh the page and try again</li>
-                  <li>Check your internet connection</li>
-                  <li>Verify the cluster is accessible and responding</li>
-                  <li>Clear browser cache and reload</li>
-                  <li>Wait a few moments and retry - there may be temporary connectivity issues</li>
-                  <li>Contact support if the issue persists</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="504 (Gateway Timeout) - No Data Available | Cluster/Test Suites | Common">
+    **Scenario:** If page is not loaded
+    
+    **Error Message:** No data available
+    
+    **Description & Solution:**
+    - The page failed to load data within the timeout period
+    - Refresh the page and try again
+    - Check your internet connection
+    - Verify the cluster is accessible and responding
+    - Clear browser cache and reload
+    - Wait a few moments and retry - there may be temporary connectivity issues
+    - Contact support if the issue persists
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">13</span>
-              <span className="cell">Cluster</span>
-              <span className="cell">Add Cluster</span>
-              <span className="cell">Wrong kubeconfig / invalid config</span>
-              <span className="cell error-code">403 (Forbidden)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>Please check your kubeconfig</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>The provided kubeconfig file is invalid or contains incorrect credentials</li>
-                  <li>Validate your kubeconfig file format is correct YAML</li>
-                  <li>Ensure the cluster API server endpoint is accessible</li>
-                  <li>Verify your credentials in the kubeconfig have not expired</li>
-                  <li>Check for typos or missing fields in the configuration</li>
-                  <li>Test the kubeconfig with kubectl locally to ensure it works</li>
-                  <li>Regenerate the kubeconfig from your cluster if needed</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
+  <Accordion title="403 (Forbidden) - Invalid Kubeconfig | Cluster | Add Cluster">
+    **Scenario:** Wrong kubeconfig / invalid config
+    
+    **Error Message:** Please check your kubeconfig
+    
+    **Description & Solution:**
+    - The provided kubeconfig file is invalid or contains incorrect credentials
+    - Validate your kubeconfig file format is correct YAML
+    - Ensure the cluster API server endpoint is accessible
+    - Verify your credentials in the kubeconfig have not expired
+    - Check for typos or missing fields in the configuration
+    - Test the kubeconfig with kubectl locally to ensure it works
+    - Regenerate the kubeconfig from your cluster if needed
+  </Accordion>
 
-      <tr>
-        <td colSpan="5" className="p-0">
-          <details className="error-details">
-            <summary className="error-row">
-              <span className="cell">14</span>
-              <span className="cell">Cluster</span>
-              <span className="cell">Add Cluster</span>
-              <span className="cell">Cluster already added</span>
-              <span className="cell error-code">409 (Conflict)</span>
-            </summary>
-            <div className="error-content">
-              <div className="error-message">
-                <strong>Error Message:</strong>
-                <p>Failed to add cluster</p>
-              </div>
-              <div className="error-solution">
-                <strong>Description & Solution:</strong>
-                <ul>
-                  <li>A cluster with this configuration already exists in your account</li>
-                  <li>Check if the cluster is already registered in your cluster list</li>
-                  <li>Review the cluster list to find the existing cluster</li>
-                  <li>Use a different cluster name if you want to add it as a separate entry</li>
-                  <li>Remove the existing cluster first if you want to re-add it with new credentials</li>
-                  <li>Contact support if you believe this is an error</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+  <Accordion title="409 (Conflict) - Cluster Already Added | Cluster | Add Cluster">
+    **Scenario:** Cluster already added
+    
+    **Error Message:** Failed to add cluster
+    
+    **Description & Solution:**
+    - A cluster with this configuration already exists in your account
+    - Check if the cluster is already registered in your cluster list
+    - Review the cluster list to find the existing cluster
+    - Use a different cluster name if you want to add it as a separate entry
+    - Remove the existing cluster first if you want to re-add it with new credentials
+    - Contact support if you believe this is an error
+  </Accordion>
+</AccordionGroup>
 
-<style jsx>{`
-  .error-table-container {
-    width: 100%;
-    overflow-x: auto;
-  }
+## Quick Error Code Lookup
 
-  .error-details {
-    border-bottom: 1px solid #e5e7eb;
-  }
+| Error Code | Category | Primary Issue |
+|------------|----------|---------------|
+| 400 | Registration | Invalid email or duplicate registration |
+| 401 | Authentication | Wrong password or unauthorized access |
+| 403 | Cluster | Invalid kubeconfig or forbidden access |
+| 404 | Routing/Subscription | Page not found or subscription limits |
+| 409 | Cluster | Duplicate cluster addition |
+| 410 | Cluster | Permission denied for role-specific actions |
+| 422 | Team | User not registered |
+| 500 | Topology | Server error or cluster disconnected |
+| 504 | Common | Gateway timeout or data unavailable |
 
-  .error-details summary {
-    list-style: none;
-    cursor: pointer;
-  }
-
-  .error-details summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .error-row {
-    display: grid;
-    grid-template-columns: 60px 150px 180px 1fr 200px;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    align-items: center;
-    background: white;
-    transition: background-color 0.2s;
-  }
-
-  .error-row:hover {
-    background-color: #f9fafb;
-  }
-
-  .error-details[open] .error-row {
-    background-color: #f3f4f6;
-    font-weight: 500;
-  }
-
-  .error-row .cell {
-    font-size: 0.875rem;
-  }
-
-  .error-row .error-code {
-    color: #dc2626;
-    font-weight: 600;
-  }
-
-  .error-content {
-    padding: 1.5rem;
-    background-color: #f9fafb;
-    border-top: 1px solid #e5e7eb;
-  }
-
-  .error-message,
-  .error-solution {
-    margin-bottom: 1rem;
-  }
-
-  .error-message strong,
-  .error-solution strong {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    color: #374151;
-  }
-
-  .error-message p {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0;
-  }
-
-  .error-solution ul {
-    list-style: disc;
-    padding-left: 1.25rem;
-    margin: 0;
-  }
-
-  .error-solution li {
-    font-size: 0.875rem;
-    color: #4b5563;
-    margin-bottom: 0.25rem;
-  }
-`}</style>
+---
 
 ## Common Issues
 
